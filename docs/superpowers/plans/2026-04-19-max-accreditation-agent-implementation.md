@@ -750,6 +750,54 @@ git add README.md docs/superpowers/plans/2026-04-19-max-accreditation-agent-impl
 git commit -m "docs: finalize MAX accreditation migration plan"
 ```
 
+## Task 8: Populate the PSMU accreditation knowledge base and specialist catalog
+
+**Files:**
+- Create: `src/domain/ai/common/tests/knowledge-base-assets.spec.ts`
+- Modify: `resources/knowledge-base/search-base/mys/ru.json`
+- Modify: `resources/knowledge-base/specialists/ru.json`
+- Modify: `docs/superpowers/plans/2026-04-19-max-accreditation-agent-implementation.md`
+
+- [x] **Step 1: Add a failing regression test for the real JSON assets**
+
+```ts
+expect(asset.items.length).toBeGreaterThanOrEqual(10);
+expect(asset.specialists.length).toBeGreaterThanOrEqual(8);
+expect(asset.specialists).toEqual(
+    expect.not.arrayContaining([
+        expect.objectContaining({ fullName: 'Иванов Иван Иванович' }),
+    ]),
+);
+```
+
+- [x] **Step 2: Replace the placeholder accreditation dataset with structured PSMU FAC entries**
+
+```json
+{
+  "id": "contacts-general",
+  "topic": "contacts",
+  "intent": "how_to_contact",
+  "title": "Как связаться с ФАЦ ПГМУ"
+}
+```
+
+- [x] **Step 3: Fill the specialist catalog with real FAC staff and topic routing**
+
+```json
+{
+  "id": "artamonova-olga-antonovna",
+  "fullName": "Артамонова Ольга Антоновна",
+  "position": "Руководитель МАСЦ",
+  "topics": ["аккредитация", "организация аккредитации"]
+}
+```
+
+- [x] **Step 4: Re-run the asset regression test**
+
+Run: `npm run test -- src/domain/ai/common/tests/knowledge-base-assets.spec.ts`
+
+Expected: PASS with the populated search-base and specialist assets.
+
 ## Self-Review
 
 - Spec coverage: the plan covers the narrowed AI runtime, MAX transport, bootstrap/module switch, dead-code removal, and final verification.
