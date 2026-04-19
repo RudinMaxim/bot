@@ -1,0 +1,111 @@
+services:
+  weaviate:
+    image: semitechnologies/weaviate:1.25.0
+    restart: unless-stopped
+    environment:
+      - QUERY_DEFAULTS_LIMIT=25
+      - AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED=true
+      - PERSISTENCE_DATA_PATH=/var/lib/weaviate
+      - DEFAULT_VECTORIZER_MODULE=none
+      - ENABLE_MODULES=text2vec-cohere,text2vec-huggingface,text2vec-palm,generative-cohere,generative-palm,ref2vec-centroid,reranker-cohere
+      - ENABLE_GRPC=true
+      - CLUSTER_HOSTNAME=node1
+      - REPLICATION_FACTOR=1
+      - CLUSTER_GOSSIP_BIND_PORT=7100
+      - CLUSTER_DATA_BIND_PORT=7101
+      - CLUSTER_JOIN=
+    volumes:
+      - weaviate_data:/var/lib/weaviate
+    networks:
+      - app_network
+
+  ollama:
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+      - OLLAMA_ORIGINS=*
+      - OLLAMA_KEEP_ALIVE=-1
+      - OLLAMA_NUM_PARALLEL=1
+      - OLLAMA_MAX_QUEUE=128
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - app_network
+    entrypoint: >
+      sh -c "
+        ollama serve &
+        sleep 5 &&
+        ollama pull ${OLLAMA_MODELS:-nomic-embed-text-v2-moe:latest}
+        wait
+      "
+  redis:
+    image: redis:latest
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - redis_data:/data
+    networks:
+      - app_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-developer-ai}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app_network
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-developer-ai}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  nestjs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    volumes:
+      - ./src:/app/src
+    env_file:
+      - .env
+    environment:
+      HOST: 0.0.0.0
+      POSTGRES_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-developer-ai}
+      REDIS_HOST: redis
+      EMBEDDING_DATABASE_URL: http://weaviate:8080
+      EMBEDDING_VECTORIZATION_URL: http://ollama:11434
+    depends_on:
+      - weaviate
+      - ollama
+      - postgres
+    networks:
+      - app_network
+      - web
+
+volumes:
+  weaviate_data:
+  ollama_data:
+  redis_data:
+  postgres_data:
+
+networks:
+  app_network:
+    driver: bridge
+  web:
+    external: true

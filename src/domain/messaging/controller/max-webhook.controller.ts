@@ -10,7 +10,7 @@ import { SecretsConfig } from 'src/infrastructure/config/interfaces';
 import { MessageService } from '../services/message.service';
 import { MaxAdapterService } from '../services/max-adapter.service';
 import { MaxBotApiService } from '../services/max-bot-api.service';
-import { MaxUpdate } from '../common/types/max.types';
+import type { MaxUpdate } from '../common/types/max.types';
 
 @Controller('max')
 export class MaxWebhookController {

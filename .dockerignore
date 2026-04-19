@@ -1,0 +1,13 @@
+.tmp/
+logs/
+uploads/
+
+**/npm-debug.log
+**/.npm
+**/.npmrc
+
+node_modules
+dist
+coverage
+*.log
+.git

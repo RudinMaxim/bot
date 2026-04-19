@@ -1,0 +1,17 @@
+{
+  "specialists": [
+    {
+      "id": "accreditation-main",
+      "fullName": "Иванов Иван Иванович",
+      "position": "Специалист по аккредитации",
+      "contact": "@ivanov",
+      "topics": [
+        "аккредитация",
+        "статус заявки",
+        "ошибка в документах",
+        "документы"
+      ],
+      "isDefault": true
+    }
+  ]
+}

@@ -1,0 +1,440 @@
+{
+    "system": {
+        "messaging": {
+            "fallbackResponse": "Response was not generated",
+            "commands": {
+                "unknown": "Unknown command. Use /help for the list of commands",
+                "stop": {
+                    "stopped": "Stopped generation.",
+                    "noActive": "There is no active generation right now."
+                }
+            },
+            "errors": {
+                "processingDefault": "Processing error",
+                "unknownError": "Unknown error",
+                "failed": "Error: {error}",
+                "clearFailed": "Failed to clear history. Please try again later.",
+                "voiceMissingContent": "Voice content is missing",
+                "voiceNoSpeech": "Could not recognize speech. Please speak more clearly or use text.",
+                "voiceProcessingFailed": "Failed to process voice message. Please try again or use text."
+            }
+        },
+        "gateway": {
+            "errors": {
+                "generic": "An error occurred. Please try again later."
+            },
+            "processing": {
+                "voice": "Recognizing voice message...",
+                "text": "Processing your request...",
+                "phases": {
+                    "thinking": "Analyzing your request...",
+                    "searching": "Looking for information...",
+                    "analyzing": "Finding the best options...",
+                    "executing": "Processing your request...",
+                    "navigating": "Searching the site...",
+                    "generating": "Preparing response...",
+                    "streaming": "Typing..."
+                }
+            }
+        },
+        "webAdapter": {
+            "errors": {
+                "joinChatIdRequired": "chatId is required for join event",
+                "handlerNotSet": "Message handler is not set",
+                "processing": "Error while processing the message. Please try again later.",
+                "cancelGeneration": "Failed to cancel generation. Please try again later.",
+                "rateLimited": "Too many requests. Please try again later."
+            },
+            "validation": {
+                "emptyMessage": "Empty message",
+                "envelopeBodyRequired": "Envelope body is required",
+                "chatIdRequired": "chatId is required",
+                "usernameMustBeString": "username must be a string",
+                "localeMustBeString": "locale must be a string",
+                "contentOrAudioOrFormRequired": "content or audio.base64 or form is required",
+                "contentTooLong": "content exceeds the maximum allowed length ({max})",
+                "audioMimeTypeMustBeString": "audio.mimeType must be a string",
+                "audioDurationMustBeNumber": "audio.durationMs must be a number",
+                "audioFileNameMustBeString": "audio.fileName must be a string",
+                "audioSizeMustBeNumber": "audio.size must be a number",
+                "formMustBeObject": "form must be an object",
+                "formIdRequired": "form.id is required",
+                "formTitleRequired": "form.title is required",
+                "formFieldsRequired": "form.fields must be a non-empty array",
+                "formFieldInvalid": "form field is invalid",
+                "formFieldKeyRequired": "form.fields[].key is required",
+                "formFieldLabelRequired": "form.fields[].label is required",
+                "formFieldTypeInvalid": "form.fields[].type must be text, phone_or_email, or date",
+                "formStringTooLong": "{field} exceeds the maximum allowed length ({max})",
+                "formStringContainsInvalidChars": "{field} contains invalid characters",
+                "wsNotInitialized": "WebSocket server is not initialized"
+            },
+            "audio": {
+                "base64Required": "audio.base64 is required for voice messages",
+                "unsupportedFormat": "Unsupported audio format. Supported: {formats}"
+            }
+        },
+        "ai": {
+            "actionFeedback": {
+                "confirmationInstruction": "Call request confirmation",
+                "missingInstruction": "Not enough data for a call request",
+                "missingData": "Need additional contact details",
+                "missingDataErrorPrefix": "Missing data: ",
+                "missingNameQuestion": "How should I address you?",
+                "missingContactQuestion": "Please leave a phone number (or email) so we can contact you."
+            },
+            "contactKeywords": {
+                "name": [
+                    "your name",
+                    "full name",
+                    "name",
+                    "how should i address",
+                    "how can i address",
+                    "who are you"
+                ],
+                "contact": [
+                    "phone",
+                    "phone number",
+                    "email",
+                    "e-mail",
+                    "contact",
+                    "reach"
+                ]
+            },
+            "fastPath": {
+                "instruction": "Use session context",
+                "assistantInfo": "Your name is Andrey. You are the Mys residential project chat assistant for MR Group. Sound warm, natural, and practical, like a thoughtful consultant in a chat. You help with apartment selection, payment options, mortgages, infrastructure, construction timelines, booking a consultation, and the next steps on the website. When the user asks who you are or what your name is, introduce yourself briefly in a human way: explain that you can quickly orient them in the project, suggest options, and help them move forward without unnecessary friction.",
+                "contactKeywords": ["call", "request", "consultation"]
+            },
+            "validation": {
+                "inputEmptyAfterSanitization": "Input is empty after sanitization",
+                "validationFailed": "Validation failed: {error}",
+                "validationFailedFallback": "Validation failed",
+                "contentMustBeString": "Content must be a non-empty string",
+                "contentEmptyAfterSanitization": "Content is empty after sanitization",
+                "nameCannotBeEmpty": "Name cannot be empty",
+                "nameTooLong": "Name is too long (max 100 characters)",
+                "nameInvalidChars": "Name contains invalid characters",
+                "invalidContactFormat": "Invalid contact format (phone or email)",
+                "sessionIdRequired": "SessionId is required and cannot be empty",
+                "chatInputRequired": "ChatInput is required and cannot be empty",
+                "generic": "Validation error",
+                "invalidMessageContent": "Invalid message content: {error}",
+                "invalidContactData": "Invalid contact data: {error}"
+            },
+            "errors": {
+                "unknownProcessing": "Unknown processing error",
+                "batchPromiseRejection": "Promise rejection in batch processing"
+            }
+        }
+    },
+    "content": {
+        "common": {
+            "actions": {
+                "send": "Send",
+                "cancel": "Cancel",
+                "confirmYes": "Yes",
+                "stop": "Stop",
+                "reload": "Reload",
+                "copy": "Copy"
+            },
+            "labels": {
+                "messagesHeading": "Assistant message feed",
+                "feedbackLike": "Feedback: like",
+                "feedbackDislike": "Feedback: dislike",
+                "dash": "—"
+            },
+            "units": {
+                "mb": "MB",
+                "sqm": "m²",
+                "m": "m"
+            },
+            "senders": {
+                "you": "You",
+                "system": "System",
+                "assistant": "Assistant"
+            },
+            "notifications": {
+                "copied": "Copied",
+                "copyFailed": "Failed",
+                "linkCopied": "Link copied",
+                "actionDone": "Action completed"
+            }
+        },
+        "header": {
+            "retryConnection": "Retry connection",
+            "newDialogLabel": "Start a new dialog",
+            "newDialogButton": "New dialog"
+        },
+        "messaging": {
+            "help": "/help  help and capabilities\n/clear  clear chat history\n/stop  stop current generation\n/cancel  cancel current operation",
+            "clear": {
+                "success": "Chat history has been cleared.{details}",
+                "details": " Removed messages: {count}."
+            }
+        },
+        "widget": {
+            "regionLabel": "AI assistant",
+            "skipToComposer": "Skip to input field",
+            "launcherLabel": "Open chat",
+            "closeLabel": "Close chat",
+            "openModalLabel": "Open window",
+            "collapseModalLabel": "Collapse window"
+        },
+        "messageList": {
+            "emptyTitle": "Tell me how I can help",
+            "emptyHint": "Welcome to the ЖК МЫС bot! You can send me a voice message or type your request!",
+            "jumpButton": "New replies ↓",
+            "historyAria": "Message history",
+            "floorOf": " of {max}",
+            "copyAria": "Copy reply",
+            "speakAria": "Play audio response",
+            "stopSpeakAria": "Stop audio response",
+            "quickReplyFallback": "Quick reply",
+            "voice": {
+                "durationAria": "Duration",
+                "sizeAria": "File size"
+            },
+            "propertyCards": {
+                "aria": "Real estate подборки",
+                "planAlt": "Floor plan",
+                "planMissing": "Floor plan not attached",
+                "variant": "Option {index}",
+                "area": "Area",
+                "floor": "Floor",
+                "rooms": "Rooms",
+                "ceiling": "Ceiling height",
+                "decoration": "Finishing",
+                "decorationNone": "No finishing",
+                "decorationWith": "With finishing",
+                "decorationWhiteBox": "White box",
+                "deadline": "Completion date",
+                "building": "Building",
+                "details": "More details",
+                "studio": "Studio",
+                "notSpecified": "Not specified"
+            },
+            "suggestions": [
+                {
+                    "label": "Apartment in the “Volga” building",
+                    "value": "Find me an apartment in the Volga building"
+                },
+                {
+                    "label": "Learn about the developer",
+                    "value": "I want to learn about the developer"
+                }
+            ]
+        },
+        "messageInput": {
+            "placeholder": "How can I help you?",
+            "commandsAria": "Commands",
+            "messageAria": "Message to the assistant",
+            "recordVoiceAria": "Record a voice message",
+            "cancelRecordingAria": "Cancel recording",
+            "sendMessageAria": "Send message",
+            "cancelGenerationAria": "Cancel generation",
+            "voiceButton": "Voice",
+            "commandHelp": "Help and capabilities",
+            "commandClear": "Clear chat history",
+            "commandStop": "Stop current generation",
+            "commandCancel": "Cancel current operation",
+            "quickActionsAria": "Quick actions"
+        },
+        "forms": {
+            "defaultTitle": "Form",
+            "fieldRequired": "Please fill in the field",
+            "fieldTooLong": "Value too long",
+            "invalidContact": "Please provide a valid phone number or email address.",
+            "submitted": "Submitted",
+            "contact": {
+                "title": "Contact details",
+                "description": "Fill out the form and our manager will contact you.",
+                "submitText": "Send",
+                "clarificationResponse": "To book a consultation, please fill out the form below (name and phone/email).",
+                "fields": {
+                    "clientName": {
+                        "label": "What is your name?",
+                        "placeholder": "Your name"
+                    },
+                    "phone": {
+                        "label": "Phone number",
+                        "placeholder": "+1 (555) 123-4567"
+                    },
+                    "email": {
+                        "label": "Email",
+                        "placeholder": "email@example.com"
+                    },
+                    "appointmentDate": {
+                        "label": "Appointment date",
+                        "placeholder": "For example, 2026-03-20 18:00"
+                    }
+                }
+            }
+        },
+        "ai": {
+            "response": {
+                "errorResponse": "Sorry, something went wrong while generating a response. We will look into it and get back to you shortly.",
+                "fallbackResponse": "We could not generate a response from the available data. Please try rephrasing your question.",
+                "responseNotFound": "Response not found",
+                "quickReplyExamples": "Examples (use the LANGUAGE): \"Show apartments under 20M\", \"Learn about parking\", \"Book a viewing\"",
+                "missingDataQuestions": {
+                    "client_name": "How should I address you?",
+                    "contact_info": "Please leave a phone number or email so we can contact you."
+                }
+            },
+            "quickReplies": {
+                "show_all_apartments": "Show all apartments",
+                "similar_options": "Similar options",
+                "mortgage_discounts": "Mortgage and discounts",
+                "transport_area": "Transport and surroundings",
+                "layouts_finishing": "Layouts and finishes",
+                "infrastructure_nearby": "Nearby infrastructure",
+                "about_mr_group": "About MR Group",
+                "facts_mr_group": "Facts about MR Group",
+                "construction_progress": "Construction progress",
+                "continue_search": "Continue searching",
+                "facts_mys": "Facts about ЖК «Мыс»",
+                "pros_cons_mys": "Pros and cons of ЖК «Мыс»",
+                "completion_timelines": "Completion timelines",
+                "parking_storage": "Parking and storage rooms",
+                "compare_other": "Compare with other complexes",
+                "curate_criteria": "Find options matching your criteria",
+                "payment_options": "Learn about payment options",
+                "learn_construction_progress": "Ask about construction progress",
+                "leave_contacts_for_consultation": "Leave contact details for a consultation",
+                "leave_contacts": "Leave contact details",
+                "learn_discounts": "Learn about discounts",
+                "discuss_purchase_terms": "Discuss purchase terms",
+                "tell_mortgage_discounts": "Tell me about mortgage and discounts",
+                "urban_blocks_infra": "Urban blocks and infrastructure",
+                "how_to_get_there": "How to get there and routes",
+                "construction_stages": "Construction stages and timelines",
+                "nearby_infrastructure": "Nearby infrastructure",
+                "show_layouts": "Show layouts",
+                "find_similar_options": "Find similar options",
+                "show_cottages": "Show cottages",
+                "get_info_by_email": "Get info by email"
+            },
+            "quickReplyPrompts": {
+                "show_all_apartments": "Show all available apartments in Mys.",
+                "similar_options": "Find similar options for my current request.",
+                "mortgage_discounts": "Tell me about mortgages, discounts, installments, and payment options in Mys.",
+                "transport_area": "Tell me about transport access, commute, and the surrounding area of Mys.",
+                "layouts_finishing": "Tell me about layouts, areas, and finishing options in Mys.",
+                "infrastructure_nearby": "Tell me about infrastructure near Mys.",
+                "about_mr_group": "Tell me about MR Group.",
+                "facts_mr_group": "Share key facts about MR Group.",
+                "construction_progress": "Tell me about the construction progress of Mys.",
+                "continue_search": "Continue the selection and show more options for my current request.",
+                "facts_mys": "Share key facts about Mys.",
+                "pros_cons_mys": "Tell me the pros and cons of Mys.",
+                "completion_timelines": "Tell me about Mys completion timelines.",
+                "parking_storage": "Tell me about parking and storage options in Mys.",
+                "compare_other": "Compare Mys with other residential projects.",
+                "curate_criteria": "Pick options that match my criteria.",
+                "payment_options": "Tell me about payment options in Mys.",
+                "learn_construction_progress": "Tell me more about the construction progress of Mys.",
+                "leave_contacts_for_consultation": "I want to leave my contact details for a consultation.",
+                "leave_contacts": "I want to leave my contact details.",
+                "learn_discounts": "Tell me about discounts and special offers.",
+                "discuss_purchase_terms": "Let us discuss purchase terms.",
+                "tell_mortgage_discounts": "Tell me about mortgages and discounts in Mys.",
+                "how_to_get_there": "How do I get to Mys and what routes are available?",
+                "construction_stages": "Tell me about the construction stages and timelines of Mys.",
+                "nearby_infrastructure": "Tell me about nearby infrastructure around Mys.",
+                "show_layouts": "Show available layouts in Mys.",
+                "find_similar_options": "Find similar options for my current criteria.",
+                "show_cottages": "Show available cottages and townhouses in Mys."
+            }
+        },
+        "sessionInfo": {
+            "copyLinkButton": "Copy link",
+            "copyManual": "Copy the link manually: {url}"
+        },
+        "voice": {
+            "label": "Voice message",
+            "seconds": "{count} sec",
+            "tooLarge": "Voice message exceeds 10 MB",
+            "saveFailed": "Failed to save voice message"
+        },
+        "init": {
+            "failedTitle": "Failed to start the assistant",
+            "failedMessage": "Initialization error: {error}",
+            "errorHint": "Check HTTP/WS host settings and network connection, then try again."
+        },
+        "connection": {
+            "headerStatus": {
+                "online": "Online",
+                "connecting": "Connecting…",
+                "offline": "Offline",
+                "error": "Connection error"
+            },
+            "status": {
+                "connecting": "Connecting…",
+                "connected": "Connected",
+                "lost": "Connection lost"
+            },
+            "retryPrompt": "Failed to connect. Press retry.",
+            "cantCancelNoConnection": "Cannot cancel: no connection"
+        },
+        "dialog": {
+            "resetConfirm": "Start a new dialog? The context and history of the current chat will be deleted.",
+            "siteAssistantNavigationConfirm": "The assistant wants to navigate to another page on this site to complete your request. Allow navigation to {url}?",
+            "siteAssistantNavigationAllow": "Allow",
+            "siteAssistantNavigationDeny": "Don't allow",
+            "clearing": "Clearing dialog…",
+            "cleared": "Dialog cleared",
+            "clearedCount": "Dialog cleared ({count})",
+            "updatedNotConfirmed": "Dialog updated, server did not confirm clearing",
+            "clearFailed": "Failed to clear dialog, please try again later"
+        },
+        "send": {
+            "messageFailed": "Failed to send message",
+            "actionFailed": "Failed to send action",
+            "noConnection": "No connection to send",
+            "messageSending": "Sending…",
+            "messageQueued": "Queued (waiting for connection)",
+            "formSending": "Sending form…",
+            "formQueued": "Form queued (waiting for connection)",
+            "voiceSentRest": "Voice sent (REST)",
+            "voiceSent": "Voice sent",
+            "voiceSendFailed": "Failed to send voice message"
+        },
+        "reply": {
+            "ready": "Reply is ready",
+            "error": "Error while replying"
+        },
+        "generation": {
+            "stopping": "Stopping generation…"
+        },
+        "progress": {
+            "typing": "Assistant is typing…",
+            "state": {
+                "pending": "Processing request…",
+                "processing": "Preparing response…",
+                "completed": "Done",
+                "cancelled": "Generation stopped",
+                "failed": "Failed to complete",
+                "default": "Processing…"
+            }
+        },
+        "feedback": {
+            "noMessageId": "Cannot send feedback: message id is missing",
+            "messageNotFound": "Message for feedback was not found",
+            "alreadySaved": "Feedback already saved",
+            "thanks": "Thanks for your feedback!",
+            "saved": "Feedback saved",
+            "sendFailed": "Failed to send feedback"
+        },
+        "recording": {
+            "prefix": "Recording",
+            "inProgress": "Recording...",
+            "saving": "Saving...",
+            "notSupported": "Recording is not supported in this browser",
+            "noMicAccess": "No microphone access",
+            "startFailed": "Failed to start recording",
+            "launchFailed": "Failed to launch recording",
+            "empty": "Empty recording, please try again"
+        }
+    }
+}

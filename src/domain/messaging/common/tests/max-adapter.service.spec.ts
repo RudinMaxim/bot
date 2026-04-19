@@ -10,7 +10,7 @@ describe('MaxAdapterService', () => {
                 message_id: 'm-1',
                 text: 'Какой статус заявки?',
                 chat: { chat_id: 'chat-1', type: 'dialog' },
-                from: { user_id: 'user-1', username: 'max-user' },
+                from: { user_id: 'user-1' },
                 timestamp: 1711111111,
             },
         });
@@ -20,8 +20,8 @@ describe('MaxAdapterService', () => {
             userId: 'user-1',
             type: 'text',
             content: 'Какой статус заявки?',
-            username: 'max-user',
         });
+        expect(normalized).not.toHaveProperty('username');
     });
 
     it('returns null for unsupported MAX updates', () => {

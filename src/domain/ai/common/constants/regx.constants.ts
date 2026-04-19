@@ -1,0 +1,9 @@
+export const VALID_NAME_RE = /^[a-zа-яё\s\-'.]+$/iu;
+export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i;
+export const PHONE_RE = /^\+?[0-9]{10,15}$/;
+export const PHONE_SEPARATORS_RE = /[\s\-()]/g;
+export const SCRIPT_RE = /<script[^>]*>.*?<\/script>/gis;
+export const IFRAME_RE = /<iframe[^>]*>.*?<\/iframe>/gis;
+export const JS_PROTOCOL_RE = /javascript:/gi;
+export const INLINE_HANDLER_RE = /on\w+\s*=\s*["'][^"']*["']/gi;
+export const ZERO_WIDTH_RE = /[\u200B-\u200D\uFEFF]/g;

@@ -1,0 +1,426 @@
+{
+    "system": {
+        "messaging": {
+            "fallbackResponse": "Ответ не сгенерирован",
+            "commands": {
+                "unknown": "Неизвестная команда. Используйте /help для списка команд",
+                "stop": {
+                    "stopped": "Остановил генерацию.",
+                    "noActive": "Сейчас нет активной генерации."
+                }
+            },
+            "errors": {
+                "processingDefault": "Ошибка обработки",
+                "unknownError": "Неизвестная ошибка",
+                "failed": "Ошибка: {error}",
+                "clearFailed": "Не удалось очистить историю. Попробуйте позже.",
+                "voiceMissingContent": "Голосовое содержимое отсутствует",
+                "voiceNoSpeech": "Не удалось распознать речь. Пожалуйста, говорите четче или используйте текст.",
+                "voiceProcessingFailed": "Не удалось обработать голосовое сообщение. Попробуйте ещё раз или используйте текст."
+            }
+        },
+        "gateway": {
+            "errors": {
+                "generic": "Произошла ошибка. Попробуйте позже."
+            },
+            "processing": {
+                "voice": "Распознаю голосовое сообщение...",
+                "text": "Обрабатываю ваш запрос...",
+                "phases": {
+                    "thinking": "Анализирую запрос...",
+                    "searching": "Ищу информацию...",
+                    "analyzing": "Подбираю варианты...",
+                    "executing": "Обрабатываю заявку...",
+                    "navigating": "Ищу на сайте...",
+                    "generating": "Формирую ответ...",
+                    "streaming": "Печатаю..."
+                }
+            }
+        },
+        "webAdapter": {
+            "errors": {
+                "joinChatIdRequired": "chatId обязателен для события join",
+                "handlerNotSet": "Обработчик сообщений не установлен",
+                "processing": "Ошибка при обработке сообщения. Попробуйте позже.",
+                "cancelGeneration": "Не удалось отменить генерацию. Попробуйте позже.",
+                "rateLimited": "Слишком много запросов. Попробуйте позже."
+            },
+            "validation": {
+                "emptyMessage": "Пустое сообщение",
+                "envelopeBodyRequired": "Envelope body обязателен",
+                "chatIdRequired": "chatId обязателен",
+                "usernameMustBeString": "username должен быть строкой",
+                "localeMustBeString": "locale должен быть строкой",
+                "contentOrAudioOrFormRequired": "content или audio.base64 или form обязателен",
+                "contentTooLong": "content превышает максимально допустимую длину ({max})",
+                "audioMimeTypeMustBeString": "audio.mimeType должен быть строкой",
+                "audioDurationMustBeNumber": "audio.durationMs должен быть числом",
+                "audioFileNameMustBeString": "audio.fileName должен быть строкой",
+                "audioSizeMustBeNumber": "audio.size должен быть числом",
+                "formMustBeObject": "form должен быть объектом",
+                "formIdRequired": "form.id обязателен",
+                "formTitleRequired": "form.title обязателен",
+                "formFieldsRequired": "form.fields должен быть непустым массивом",
+                "formFieldInvalid": "поле form некорректно",
+                "formFieldKeyRequired": "form.fields[].key обязателен",
+                "formFieldLabelRequired": "form.fields[].label обязателен",
+                "formFieldTypeInvalid": "form.fields[].type должен быть text, phone_or_email или date",
+                "formStringTooLong": "{field} превышает максимально допустимую длину ({max})",
+                "formStringContainsInvalidChars": "{field} содержит недопустимые символы",
+                "wsNotInitialized": "WebSocket сервер не инициализирован"
+            },
+            "audio": {
+                "base64Required": "audio.base64 обязателен для голосовых сообщений",
+                "unsupportedFormat": "Неподдерживаемый формат аудио. Поддерживаются: {formats}"
+            }
+        },
+        "ai": {
+            "actionFeedback": {
+                "confirmationInstruction": "Подтверждение заявки на звонок",
+                "missingInstruction": "Недостаточно данных для заявки на звонок",
+                "missingData": "Требуются уточнения для связи",
+                "missingDataErrorPrefix": "Недостаточно данных: ",
+                "missingNameQuestion": "Как к вам обращаться?",
+                "missingContactQuestion": "Оставьте, пожалуйста, номер телефона (или email) для связи."
+            },
+            "contactKeywords": {
+                "name": ["как вас зовут", "вас зовут", "имя", "фамили"],
+                "contact": ["телефон", "номер", "email", "e-mail", "почт"]
+            },
+            "fastPath": {
+                "instruction": "Используй контекст сессии",
+                "assistantInfo": "Тебя зовут Андрей. Ты живой чат-ассистент ЖК «Мыс» от MR Group. Общайся тепло, естественно и по делу, как внимательный консультант в переписке. Помогаешь подобрать квартиры, объяснить условия покупки и ипотеки, рассказать про инфраструктуру и сроки строительства, подсказать следующий шаг на сайте или помочь с записью на консультацию. Если пользователь спрашивает, кто ты или как тебя зовут, представься коротко и по-человечески: объясни, что можешь быстро сориентировать по проекту, предложить варианты и помочь двигаться дальше без лишней бюрократии.",
+                "contactKeywords": ["звонок", "заявка", "консультация"]
+            },
+            "validation": {
+                "inputEmptyAfterSanitization": "Ввод пуст после очистки",
+                "validationFailed": "Ошибка валидации: {error}",
+                "validationFailedFallback": "Ошибка валидации",
+                "contentMustBeString": "Содержимое должно быть непустой строкой",
+                "contentEmptyAfterSanitization": "Содержимое пусто после очистки",
+                "nameCannotBeEmpty": "Имя не может быть пустым",
+                "nameTooLong": "Имя слишком длинное (максимум 100 символов)",
+                "nameInvalidChars": "Имя содержит недопустимые символы",
+                "invalidContactFormat": "Неверный формат контакта (телефон или email)",
+                "sessionIdRequired": "SessionId обязателен и не может быть пустым",
+                "chatInputRequired": "ChatInput обязателен и не может быть пустым",
+                "generic": "Ошибка валидации",
+                "invalidMessageContent": "Недопустимое содержимое сообщения: {error}",
+                "invalidContactData": "Некорректные контактные данные: {error}"
+            },
+            "errors": {
+                "unknownProcessing": "Неизвестная ошибка обработки",
+                "batchPromiseRejection": "Ошибка выполнения пакета"
+            }
+        }
+    },
+    "content": {
+        "common": {
+            "actions": {
+                "send": "Отправить",
+                "cancel": "Отмена",
+                "confirmYes": "Да",
+                "stop": "Остановить",
+                "reload": "Перезагрузить",
+                "copy": "Скопировать"
+            },
+            "labels": {
+                "messagesHeading": "Лента сообщений ассистента",
+                "feedbackLike": "Отзыв: нравится",
+                "feedbackDislike": "Отзыв: не нравится",
+                "dash": "—"
+            },
+            "units": {
+                "mb": "МБ",
+                "sqm": "м²",
+                "m": "м"
+            },
+            "senders": {
+                "you": "Вы",
+                "system": "Система",
+                "assistant": "Помощник"
+            },
+            "notifications": {
+                "copied": "Скопировано",
+                "copyFailed": "Не удалось",
+                "linkCopied": "Ссылка скопирована",
+                "actionDone": "Действие выполнено"
+            }
+        },
+        "header": {
+            "retryConnection": "Повторить подключение",
+            "newDialogLabel": "Начать новый диалог",
+            "newDialogButton": "Новый диалог"
+        },
+        "messaging": {
+            "help": "/help  справка по возможностям\n/clear  очистка истории чата\n/stop  остановка текущей генерации\n/cancel  отмена текущей операции",
+            "clear": {
+                "success": "История чата очищена.{details}",
+                "details": " Удалено сообщений: {count}."
+            }
+        },
+        "widget": {
+            "regionLabel": "AI assistant",
+            "skipToComposer": "Перейти к полю ввода",
+            "launcherLabel": "Открыть чат",
+            "closeLabel": "Закрыть чат",
+            "openModalLabel": "Открыть окно",
+            "collapseModalLabel": "Свернуть окно"
+        },
+        "messageList": {
+            "emptyTitle": "Расскажите, с чем помочь",
+            "emptyHint": "Добро пожаловать в бот ЖК МЫС! Вы можете отправить мне голосовое сообщение или написать текстом!",
+            "jumpButton": "Новые ответы ↓",
+            "historyAria": "История сообщений",
+            "floorOf": " из {max}",
+            "copyAria": "Скопировать ответ",
+            "speakAria": "Воспроизвести аудио ответа",
+            "stopSpeakAria": "Остановить аудио ответа",
+            "quickReplyFallback": "Быстрый ответ",
+            "voice": {
+                "durationAria": "Длительность",
+                "sizeAria": "Размер файла"
+            },
+            "propertyCards": {
+                "aria": "Подборки недвижимости",
+                "planAlt": "Планировка",
+                "planMissing": "Планировка не приложена",
+                "variant": "Вариант {index}",
+                "area": "Площадь",
+                "floor": "Этаж",
+                "rooms": "Комнаты",
+                "ceiling": "Высота потолков",
+                "decoration": "Отделка",
+                "decorationNone": "Без отделки",
+                "decorationWith": "С отделкой",
+                "decorationWhiteBox": "White box",
+                "deadline": "Срок сдачи",
+                "building": "Корпус",
+                "details": "Подробнее",
+                "studio": "Студия",
+                "notSpecified": "Не указано"
+            },
+            "suggestions": [
+                {
+                    "label": "Квартира в доме «Волга»",
+                    "value": "Подбери квартиру в доме Волга"
+                },
+                {
+                    "label": "Узнать информацию о застройщике",
+                    "value": "Хочу узнать информацию о застройщике"
+                }
+            ]
+        },
+        "messageInput": {
+            "placeholder": "Чем я могу вам помочь?",
+            "commandsAria": "Команды",
+            "messageAria": "Сообщение ассистенту",
+            "recordVoiceAria": "Записать голосовое сообщение",
+            "cancelRecordingAria": "Отменить запись",
+            "sendMessageAria": "Отправить сообщение",
+            "cancelGenerationAria": "Отменить генерацию",
+            "voiceButton": "Голосовое",
+            "commandHelp": "Справка по возможностям",
+            "commandClear": "Очистка истории чата",
+            "commandStop": "Остановка текущей генерации",
+            "commandCancel": "Отмена текущей операции",
+            "quickActionsAria": "Быстрые действия"
+        },
+        "forms": {
+            "defaultTitle": "Форма",
+            "fieldRequired": "Заполните поле",
+            "fieldTooLong": "Слишком длинное значение",
+            "invalidContact": "Укажите корректный телефон или email",
+            "submitted": "Отправлено",
+            "contact": {
+                "title": "Контакты для связи",
+                "description": "Заполните форму, и менеджер свяжется с вами.",
+                "submitText": "Отправить",
+                "clarificationResponse": "Чтобы записаться на консультацию, заполните форму ниже (имя и телефон/email).",
+                "fields": {
+                    "clientName": {
+                        "label": "Как вас зовут?",
+                        "placeholder": "Ваше имя"
+                    },
+                    "phone": {
+                        "label": "Номер телефона",
+                        "placeholder": "+7 (999) 123-45-67"
+                    },
+                    "email": {
+                        "label": "Email",
+                        "placeholder": "email@example.com"
+                    },
+                    "appointmentDate": {
+                        "label": "Дата записи",
+                        "placeholder": "Например, 2026-03-20 18:00"
+                    }
+                }
+            }
+        },
+        "ai": {
+            "response": {
+                "errorResponse": "Извините, произошла ошибка при формировании ответа. Мы обязательно разберемся и постараемся помочь вам в ближайшее время.",
+                "fallbackResponse": "Не удалось сформировать ответ на основе полученных данных. Попробуйте переформулировать ваш вопрос.",
+                "responseNotFound": "Ответ не найден",
+                "quickReplyExamples": "Примеры (на языке из LANGUAGE): \"Показать квартиры от 5 млн\", \"Узнать про паркинг\", \"Записаться на показ\"",
+                "missingDataQuestions": {
+                    "client_name": "Как к вам обращаться?",
+                    "contact_info": "Оставьте, пожалуйста, номер телефона или email для связи."
+                }
+            },
+            "quickReplies": {
+                "show_all_apartments": "Показать все квартиры",
+                "similar_options": "Похожие варианты",
+                "mortgage_discounts": "Ипотека и скидки",
+                "transport_area": "Транспорт и окружение",
+                "layouts_finishing": "Планировка и отделка",
+                "infrastructure_nearby": "Инфраструктура рядом",
+                "about_mr_group": "Про MR Group",
+                "facts_mr_group": "Факты о MR Group",
+                "construction_progress": "Ход строительства",
+                "continue_search": "Продолжить поиск",
+                "facts_mys": "Факты о ЖК «Мыс»",
+                "pros_cons_mys": "Плюсы/минусы ЖК «Мыс»",
+                "completion_timelines": "Сроки сдачи очередей",
+                "parking_storage": "Паркинг и кладовые",
+                "compare_other": "Сравнить с другими ЖК",
+                "curate_criteria": "Соберу подборку под ваши критерии",
+                "payment_options": "Узнать о способах оплаты",
+                "learn_construction_progress": "Узнать про ход строительства",
+                "leave_contacts_for_consultation": "Оставить контакты для консультации",
+                "leave_contacts": "Оставить контакты",
+                "learn_discounts": "Узнать о скидках",
+                "discuss_purchase_terms": "Обсудить условия покупки",
+                "tell_mortgage_discounts": "Рассказать про ипотеку и скидки",
+                "urban_blocks_infra": "Урбан-блоки и инфраструктура",
+                "how_to_get_there": "Как добраться и маршруты",
+                "construction_stages": "Сроки и этапы строительства",
+                "nearby_infrastructure": "Инфраструктура поблизости",
+                "show_layouts": "Показать планировки",
+                "find_similar_options": "Подобрать похожие варианты",
+                "show_cottages": "Показать коттеджи",
+                "get_info_by_email": "Получить информацию на email"
+            },
+            "quickReplyPrompts": {
+                "show_all_apartments": "Покажи все доступные квартиры в ЖК «Мыс».",
+                "similar_options": "Подбери похожие варианты по текущему запросу.",
+                "mortgage_discounts": "Расскажи про ипотеку, скидки, рассрочку и способы оплаты в ЖК «Мыс».",
+                "transport_area": "Расскажи про транспортную доступность, как добраться и окружение ЖК «Мыс».",
+                "layouts_finishing": "Расскажи про планировки, площади и отделку в ЖК «Мыс».",
+                "infrastructure_nearby": "Расскажи про инфраструктуру рядом с ЖК «Мыс».",
+                "about_mr_group": "Расскажи о застройщике MR Group.",
+                "facts_mr_group": "Расскажи факты о застройщике MR Group.",
+                "construction_progress": "Расскажи про ход строительства ЖК «Мыс».",
+                "continue_search": "Продолжи подборку и покажи дополнительные варианты по текущему запросу.",
+                "facts_mys": "Расскажи факты о ЖК «Мыс».",
+                "pros_cons_mys": "Расскажи о плюсах и минусах ЖК «Мыс».",
+                "completion_timelines": "Расскажи про сроки сдачи очередей ЖК «Мыс».",
+                "parking_storage": "Расскажи про паркинг и кладовые в ЖК «Мыс».",
+                "compare_other": "Сравни ЖК «Мыс» с другими жилыми комплексами.",
+                "curate_criteria": "Подбери варианты недвижимости по моим критериям.",
+                "payment_options": "Расскажи о способах оплаты в ЖК «Мыс».",
+                "learn_construction_progress": "Расскажи подробнее о ходе строительства ЖК «Мыс».",
+                "leave_contacts_for_consultation": "Хочу оставить контакты для консультации.",
+                "leave_contacts": "Хочу оставить контакты для связи.",
+                "learn_discounts": "Расскажи о скидках и специальных предложениях.",
+                "discuss_purchase_terms": "Давай обсудим условия покупки.",
+                "tell_mortgage_discounts": "Расскажи про ипотеку и скидки в ЖК «Мыс».",
+                "how_to_get_there": "Как добраться до ЖК «Мыс» и какие есть маршруты?",
+                "construction_stages": "Расскажи про сроки и этапы строительства ЖК «Мыс».",
+                "nearby_infrastructure": "Расскажи про инфраструктуру поблизости у ЖК «Мыс».",
+                "show_layouts": "Покажи доступные планировки в ЖК «Мыс».",
+                "find_similar_options": "Подбери похожие варианты по текущим критериям.",
+                "show_cottages": "Покажи доступные коттеджи и таунхаусы в ЖК «Мыс»."
+            }
+        },
+        "sessionInfo": {
+            "copyLinkButton": "Скопировать ссылку",
+            "copyManual": "Скопируйте ссылку вручную: {url}"
+        },
+        "voice": {
+            "label": "Голосовое сообщение",
+            "seconds": "{count} сек",
+            "tooLarge": "Голосовое сообщение превышает 10 МБ",
+            "saveFailed": "Не удалось сохранить голосовое сообщение"
+        },
+        "init": {
+            "failedTitle": "Не удалось запустить ассистента",
+            "failedMessage": "Ошибка инициализации: {error}",
+            "errorHint": "Проверьте настройки HTTP/WS хостов и соединение с сетью, затем повторите попытку."
+        },
+        "connection": {
+            "headerStatus": {
+                "online": "Онлайн",
+                "connecting": "Подключение…",
+                "offline": "Офлайн",
+                "error": "Ошибка подключения"
+            },
+            "status": {
+                "connecting": "Соединяемся…",
+                "connected": "Соединено",
+                "lost": "Соединение потеряно"
+            },
+            "retryPrompt": "Не удалось подключиться. Нажмите повторить.",
+            "cantCancelNoConnection": "Нельзя отменить: нет соединения"
+        },
+        "dialog": {
+            "resetConfirm": "Начать новый диалог? Контекст и история текущего чата будут удалены.",
+            "siteAssistantNavigationConfirm": "Ассистент хочет перейти на другую страницу сайта, чтобы выполнить ваш запрос. Разрешить переход на {url}?",
+            "siteAssistantNavigationAllow": "Разрешить",
+            "siteAssistantNavigationDeny": "Не разрешать",
+            "clearing": "Очищаем диалог…",
+            "cleared": "Диалог очищен",
+            "clearedCount": "Диалог очищен ({count})",
+            "updatedNotConfirmed": "Диалог обновлен, сервер не подтвердил очистку",
+            "clearFailed": "Не удалось очистить диалог, попробуйте позже"
+        },
+        "send": {
+            "messageFailed": "Не удалось отправить сообщение",
+            "actionFailed": "Не удалось отправить действие",
+            "noConnection": "Нет соединения для отправки",
+            "messageSending": "Отправляем…",
+            "messageQueued": "В очереди (ожидание соединения)",
+            "formSending": "Отправляем форму…",
+            "formQueued": "Форма в очереди (ожидание соединения)",
+            "voiceSentRest": "Голосовое отправлено (REST)",
+            "voiceSent": "Голосовое отправлено",
+            "voiceSendFailed": "Не удалось отправить голосовое сообщение"
+        },
+        "reply": {
+            "ready": "Ответ готов",
+            "error": "Ошибка при ответе"
+        },
+        "generation": {
+            "stopping": "Останавливаем генерацию…"
+        },
+        "progress": {
+            "typing": "Ассистент печатает…",
+            "state": {
+                "pending": "Обрабатываем запрос…",
+                "processing": "Готовим ответ…",
+                "completed": "Готово",
+                "cancelled": "Генерация остановлена",
+                "failed": "Не удалось выполнить",
+                "default": "Обработка…"
+            }
+        },
+        "feedback": {
+            "noMessageId": "Нельзя отправить отзыв: нет id сообщения",
+            "messageNotFound": "Сообщение для отзыва не найдено",
+            "alreadySaved": "Отзыв уже сохранен",
+            "thanks": "Спасибо за отзыв!",
+            "saved": "Отзыв сохранен",
+            "sendFailed": "Не удалось отправить отзыв"
+        },
+        "recording": {
+            "prefix": "Запись",
+            "inProgress": "Запись...",
+            "saving": "Сохраняем...",
+            "notSupported": "Запись недоступна в этом браузере",
+            "noMicAccess": "Нет доступа к микрофону",
+            "startFailed": "Не удалось начать запись",
+            "launchFailed": "Не удалось запустить запись",
+            "empty": "Пустая запись, попробуйте еще раз"
+        }
+    }
+}

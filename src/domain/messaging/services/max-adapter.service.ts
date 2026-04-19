@@ -16,7 +16,6 @@ export class MaxAdapterService {
             messageId: message.message_id,
             chatId: message.chat.chat_id,
             userId: message.from.user_id,
-            username: message.from.username,
             type: MessageType.TEXT,
             content: message.text,
             timestamp,
