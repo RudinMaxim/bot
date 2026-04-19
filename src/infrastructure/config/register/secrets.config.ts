@@ -109,25 +109,6 @@ export const secretsConfig = registerAs('secrets', (): SecretsConfig => {
                     '300',
                 10,
             ),
-            speechkit: {
-                apiKey: process.env.YC_API_KEY?.trim() || undefined,
-                iamToken:
-                    process.env.YC_IAM_TOKEN?.trim() ||
-                    process.env.IAM_TOKEN?.trim() ||
-                    undefined,
-                folderId:
-                    process.env.YC_FOLDER_ID?.trim() ||
-                    process.env.FOLDER_ID?.trim() ||
-                    undefined,
-                ttsEndpoint:
-                    process.env.YC_TTS_ENDPOINT ||
-                    'https://tts.api.cloud.yandex.net:443/tts/v3/utteranceSynthesis',
-                timeoutMs: parseInt(
-                    process.env.YC_TTS_TIMEOUT_MS || '30000',
-                    10,
-                ),
-                maxRetries: parseInt(process.env.YC_TTS_MAX_RETRIES || '3', 10),
-            },
             models: {
                 coordinator: parseModelList(
                     process.env.COORDINATOR_AVAILABLE_MODELS,
@@ -141,163 +122,16 @@ export const secretsConfig = registerAs('secrets', (): SecretsConfig => {
                     process.env.RESPONSE_AVAILABLE_MODELS,
                     ['gpt-5.4-nano', 'gpt-5.4-mini', 'gpt-5.4'],
                 ),
-                siteAssistant: parseModelList(
-                    process.env.SITE_ASSISTANT_AVAILABLE_MODELS,
-                    ['gpt-5.4-nano', 'gpt-5.4-mini', 'gpt-5.4'],
-                ),
                 summarization: parseModelList(
                     process.env.SUMMARIZATION_AVAILABLE_MODELS,
                     ['gpt-5.4-nano'],
-                ),
-                speechRecognition: parseModelList(
-                    process.env.SPEECH_RECOGNITION_AVAILABLE_MODELS,
-                    ['gpt-audio-mini'],
                 ),
             },
             http: {
                 timeout: parseInt(process.env.HTTP_TIMEOUT || '30000', 10),
                 maxRetries: parseInt(process.env.MAX_RETRIES || '3', 10),
             },
-            siteAssistant: {
-                actionsCacheTtl: parseInt(
-                    process.env.CACHE_TTL_ACTIONS_SECONDS || '300',
-                    10,
-                ),
-                actionsCacheType:
-                    process.env.CACHE_TYPE === 'memory' ? 'memory' : 'redis',
-                reindexOnStartup:
-                    process.env.SITE_ASSISTANT_REINDEX_ON_STARTUP === 'true',
-                crawler: {
-                    baseUrls: (
-                        process.env.SITE_ASSISTANT_CRAWLER_BASE_URLS || ''
-                    )
-                        .split(',')
-                        .map((item) => item.trim())
-                        .filter((item) => item.length > 0)
-                        .map((item) => item.replace(/\/$/, '')),
-                    sitemapPath:
-                        process.env.SITE_ASSISTANT_CRAWLER_SITEMAP_PATH ||
-                        '/sitemap.xml',
-                    userAgent:
-                        process.env.SITE_ASSISTANT_CRAWLER_USER_AGENT ||
-                        'SiteAssistantCrawler/1.0',
-                    maxPages: parseInt(
-                        process.env.SITE_ASSISTANT_CRAWLER_MAX_PAGES || '500',
-                        10,
-                    ),
-                    maxDepth: parseInt(
-                        process.env.SITE_ASSISTANT_CRAWLER_MAX_DEPTH || '3',
-                        10,
-                    ),
-                    rateLimitMs: parseInt(
-                        process.env.SITE_ASSISTANT_CRAWLER_RATE_LIMIT_MS ||
-                            '200',
-                        10,
-                    ),
-                    requestTimeoutMs: parseInt(
-                        process.env.SITE_ASSISTANT_CRAWLER_TIMEOUT_MS ||
-                            '10000',
-                        10,
-                    ),
-                    renderMode:
-                        process.env.SITE_ASSISTANT_CRAWLER_RENDER_MODE ===
-                        'http'
-                            ? 'http'
-                            : 'hybrid',
-                    browser: {
-                        enabled:
-                            process.env
-                                .SITE_ASSISTANT_CRAWLER_BROWSER_ENABLED ===
-                            'true',
-                        timeoutMs: parseInt(
-                            process.env
-                                .SITE_ASSISTANT_CRAWLER_BROWSER_TIMEOUT_MS ||
-                                '15000',
-                            10,
-                        ),
-                        waitUntil:
-                            process.env
-                                .SITE_ASSISTANT_CRAWLER_BROWSER_WAIT_UNTIL ===
-                                'load' ||
-                            process.env
-                                .SITE_ASSISTANT_CRAWLER_BROWSER_WAIT_UNTIL ===
-                                'networkidle'
-                                ? process.env
-                                      .SITE_ASSISTANT_CRAWLER_BROWSER_WAIT_UNTIL
-                                : 'domcontentloaded',
-                        postLoadDelayMs: parseInt(
-                            process.env
-                                .SITE_ASSISTANT_CRAWLER_BROWSER_POST_LOAD_DELAY_MS ||
-                                '1000',
-                            10,
-                        ),
-                    },
-                },
-                elementIndex: {
-                    topK: parseInt(
-                        process.env.SITE_ASSISTANT_ELEMENT_INDEX_TOP_K || '30',
-                        10,
-                    ),
-                    minSimilarity: parseFloat(
-                        process.env
-                            .SITE_ASSISTANT_ELEMENT_INDEX_MIN_SIMILARITY || '0',
-                    ),
-                    className:
-                        process.env.SITE_ASSISTANT_ELEMENT_INDEX_CLASS_NAME ||
-                        'SiteElementsIndex',
-                    lookupTimeoutMs: parseInt(
-                        process.env.SITE_ASSISTANT_ELEMENT_INDEX_TIMEOUT_MS ||
-                            '10000',
-                        10,
-                    ),
-                    hybridAlpha: parseFloat(
-                        process.env.SITE_ASSISTANT_ELEMENT_INDEX_HYBRID_ALPHA ||
-                            '0.35',
-                    ),
-                },
-            },
         },
-
-        realEstate: (() => {
-            const apiUsername = process.env.REAL_ESTATE_API_USERNAME || '';
-            const apiPassword = process.env.REAL_ESTATE_API_PASSWORD || '';
-            const envOrigin = process.env.REAL_ESTATE_ORIGIN || '';
-            const envApiBaseUrl = process.env.REAL_ESTATE_API_BASE_URL || '';
-            let resolvedApiBaseUrl = envApiBaseUrl.trim();
-            let resolvedOrigin = envOrigin.trim();
-
-            if (!resolvedOrigin && resolvedApiBaseUrl) {
-                try {
-                    resolvedOrigin = new URL(resolvedApiBaseUrl).origin;
-                } catch {
-                    resolvedOrigin = '';
-                }
-            }
-
-            if (!resolvedApiBaseUrl && resolvedOrigin) {
-                resolvedApiBaseUrl = new URL(
-                    '/api/list/',
-                    resolvedOrigin,
-                ).toString();
-            }
-
-            if ((apiUsername || apiPassword) && !resolvedApiBaseUrl) {
-                throw new Error(
-                    'REAL_ESTATE_API_BASE_URL is required when credentials are set',
-                );
-            }
-
-            return {
-                apiUsername,
-                apiPassword,
-                apiBaseUrl: resolvedApiBaseUrl,
-                origin: resolvedOrigin,
-                apiTimeout: parseInt(
-                    process.env.REAL_ESTATE_API_TIMEOUT || '10000',
-                    10,
-                ),
-            };
-        })(),
 
         embedding: {
             vectorizationProvider:
@@ -407,10 +241,6 @@ export const secretsConfig = registerAs('secrets', (): SecretsConfig => {
             ),
             actionLogDays: parseInt(
                 process.env.ACTION_LOG_RETENTION_DAYS || '90',
-                10,
-            ),
-            audioTempCleanupHours: parseInt(
-                process.env.AUDIO_TEMP_CLEANUP_HOURS || '1',
                 10,
             ),
         },

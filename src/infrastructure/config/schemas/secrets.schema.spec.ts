@@ -62,4 +62,20 @@ describe('validateSecretsConfig', () => {
         expect(parsed).not.toHaveProperty('SUMMARIZATION_MODEL');
         expect(parsed).not.toHaveProperty('SPEECH_RECOGNITION_MODEL');
     });
+
+    it('does not expose removed site-assistant, speech, or real-estate env keys', () => {
+        const parsed = validateSecretsConfig({
+            ...baseConfig,
+            SITE_ASSISTANT_AVAILABLE_MODELS: 'gpt-5.4',
+            SPEECH_RECOGNITION_AVAILABLE_MODELS: 'gpt-audio-mini',
+            REAL_ESTATE_API_BASE_URL: 'https://example.com/api/list/',
+            YC_TTS_ENDPOINT:
+                'https://tts.api.cloud.yandex.net:443/tts/v3/utteranceSynthesis',
+        });
+
+        expect(parsed).not.toHaveProperty('SITE_ASSISTANT_AVAILABLE_MODELS');
+        expect(parsed).not.toHaveProperty('SPEECH_RECOGNITION_AVAILABLE_MODELS');
+        expect(parsed).not.toHaveProperty('REAL_ESTATE_API_BASE_URL');
+        expect(parsed).not.toHaveProperty('YC_TTS_ENDPOINT');
+    });
 });

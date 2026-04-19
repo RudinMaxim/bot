@@ -31,62 +31,16 @@ export abstract class SecretsConfig {
             baseUrl?: string;
         };
         queryCacheTtl: number;
-        speechkit: {
-            apiKey?: string;
-            iamToken?: string;
-            folderId?: string;
-            ttsEndpoint: string;
-            timeoutMs: number;
-            maxRetries: number;
-        };
         models: {
             coordinator: string[];
             analytics: string[];
             response: string[];
-            siteAssistant: string[];
             summarization: string[];
-            speechRecognition: string[];
         };
         http: {
             timeout: number;
             maxRetries: number;
         };
-        siteAssistant: {
-            actionsCacheTtl: number;
-            actionsCacheType: 'redis' | 'memory';
-            reindexOnStartup: boolean;
-            crawler: {
-                baseUrls: string[];
-                sitemapPath: string;
-                userAgent: string;
-                maxPages: number;
-                maxDepth: number;
-                rateLimitMs: number;
-                requestTimeoutMs: number;
-                renderMode: 'http' | 'hybrid';
-                browser: {
-                    enabled: boolean;
-                    timeoutMs: number;
-                    waitUntil: 'domcontentloaded' | 'load' | 'networkidle';
-                    postLoadDelayMs: number;
-                };
-            };
-            elementIndex: {
-                topK: number;
-                minSimilarity: number;
-                className: string;
-                lookupTimeoutMs: number;
-                hybridAlpha: number;
-            };
-        };
-    };
-
-    realEstate: {
-        apiUsername: string;
-        apiPassword: string;
-        apiBaseUrl: string;
-        origin: string;
-        apiTimeout: number;
     };
 
     locales: {
@@ -148,7 +102,6 @@ export abstract class SecretsConfig {
     retention: {
         feedbackDays: number;
         actionLogDays: number;
-        audioTempCleanupHours: number;
     };
 
     security: {

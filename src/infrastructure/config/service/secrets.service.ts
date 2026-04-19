@@ -62,17 +62,6 @@ export class SecretsConfigService {
         return cors!;
     }
 
-    get realEstate(): SecretsConfig['realEstate'] {
-        const realEstate =
-            this.configService.get<SecretsConfig['realEstate']>(
-                'secrets.realEstate',
-            );
-        if (!realEstate) {
-            this.logger.warn('Real Estate configuration is missing');
-        }
-        return realEstate!;
-    }
-
     get locales(): SecretsConfig['locales'] {
         const locales =
             this.configService.get<SecretsConfig['locales']>('secrets.locales');

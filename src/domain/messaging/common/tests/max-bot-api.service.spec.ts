@@ -13,7 +13,6 @@ describe('MaxBotApiService', () => {
             webhookPath: '/api/v1/max/webhook',
         },
         ai: {} as never,
-        realEstate: {} as never,
         locales: {} as never,
         postgres: {} as never,
         embedding: {} as never,

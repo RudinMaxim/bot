@@ -1,102 +1,48 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# MAX Accreditation Bot
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+NestJS backend for a MAX messenger bot that does only two things:
+- answers from the accreditation knowledge base;
+- routes the user to a профильный специалист when the answer is partial or unreliable.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Runtime Surface
 
-## Description
+Active HTTP surface:
+- `POST /api/v1/max/webhook`
+- `GET /api/health/live`
+- `GET /api/health/ready`
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+The old widget, websocket, TTS, site-assistant, and browser-specific transport are removed from the active runtime.
 
-## Project setup
+## Required Env
 
-```bash
-$ npm install
+Minimum required variables:
+
+```env
+POSTGRES_URL=postgres://postgres:postgres@postgres:5432/developer-ai
+REDIS_HOST=redis
+OPENROUTER_API_KEY=sk-or-...
+MAX_BOT_TOKEN=
+MAX_WEBHOOK_SECRET=
 ```
 
-## Compile and run the project
+Optional MAX settings:
 
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+```env
+MAX_BOT_API_BASE_URL=https://platform-api.max.ru
+MAX_WEBHOOK_PATH=/api/v1/max/webhook
+MAX_WEBHOOK_BASE_URL=
 ```
 
-## Run tests
+## Local Run
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm install
+npm run start:dev
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+## Verification
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm run typecheck
+npm run test -- src/domain/ai/common/tests/specialist-catalog.service.spec.ts src/domain/ai/agents/coordinator/common/tests/coordinator.agent.spec.ts src/domain/ai/common/tests/orchestrator.service.spec.ts src/domain/ai/agents/response/common/tests/response.agent.spec.ts src/domain/ai/agents/search/common/tests/search.agent.spec.ts src/domain/ai/common/tests/ai.service.spec.ts src/domain/messaging/common/tests/max-adapter.service.spec.ts src/domain/messaging/common/tests/max-bot-api.service.spec.ts src/domain/messaging/common/tests/max-webhook.controller.spec.ts src/domain/messaging/common/tests/messaging.module.spec.ts src/domain/messaging/common/tests/max-only-cleanup.spec.ts src/infrastructure/config/register/secrets.config.spec.ts src/infrastructure/config/schemas/secrets.schema.spec.ts src/shared/security/security.module.spec.ts
 ```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Project Docs
-
-- [Backend: База знаний, сиды и миграции](docs/backend-knowledge-base-and-migrations.md)
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).

@@ -10,6 +10,8 @@ describe('secretsConfig', () => {
             POSTGRES_URL: 'postgres://postgres:postgres@postgres:5432/app',
             REDIS_HOST: 'redis',
             OPENROUTER_API_KEY: 'sk-or-test',
+            MAX_BOT_TOKEN: 'token',
+            MAX_WEBHOOK_SECRET: 'secret',
             SESSION_SIGNING_KEY:
                 'dev-session-signing-key-change-me-min-32-bytes-abcdef',
             JWT_SIGNING_KEY:
@@ -21,24 +23,23 @@ describe('secretsConfig', () => {
         process.env = originalEnv;
     });
 
-    it('builds site assistant runtime settings under ai.siteAssistant', () => {
+    it('does not expose removed site-assistant, speech, or real-estate config blocks', () => {
         process.env.SITE_ASSISTANT_ELEMENT_INDEX_TOP_K = '42';
-        process.env.SITE_ASSISTANT_CRAWLER_BASE_URLS =
-            'https://example.com, https://example.org/';
-
+        process.env.YC_TTS_ENDPOINT =
+            'https://tts.api.cloud.yandex.net:443/tts/v3/utteranceSynthesis';
+        process.env.REAL_ESTATE_API_BASE_URL = 'https://example.com/api/list/';
         const config = secretsConfig();
 
         expect(config).not.toHaveProperty('siteAssistant');
-        expect(config.ai.siteAssistant.elementIndex.topK).toBe(42);
-        expect(config.ai.siteAssistant.crawler.baseUrls).toEqual([
-            'https://example.com',
-            'https://example.org',
-        ]);
+        expect(config).not.toHaveProperty('realEstate');
+        expect(config.ai).not.toHaveProperty('speechkit');
+        expect(config.ai).not.toHaveProperty('siteAssistant');
     });
 
     it('ignores legacy single model aliases', () => {
         process.env.RESPONSE_MODEL = 'legacy-response-model';
         process.env.SITE_ASSISTANT_MODEL = 'legacy-site-assistant-model';
+        process.env.SPEECH_RECOGNITION_MODEL = 'legacy-audio-model';
         delete process.env.RESPONSE_AVAILABLE_MODELS;
         delete process.env.SITE_ASSISTANT_AVAILABLE_MODELS;
 
@@ -52,47 +53,24 @@ describe('secretsConfig', () => {
         expect(config.ai.models.response).not.toContain(
             'legacy-response-model',
         );
-        expect(config.ai.models.siteAssistant).toEqual([
-            'gpt-5.4-nano',
-            'gpt-5.4-mini',
-            'gpt-5.4',
-        ]);
-        expect(config.ai.models.siteAssistant).not.toContain(
-            'legacy-response-model',
-        );
-        expect(config.ai.models.siteAssistant).not.toContain(
-            'legacy-site-assistant-model',
-        );
+        expect(config.ai.models).not.toHaveProperty('siteAssistant');
+        expect(config.ai.models).not.toHaveProperty('speechRecognition');
     });
 
-    it('parses crawler render and browser flags', () => {
+    it('does not parse removed crawler flags into ai config', () => {
         process.env.SITE_ASSISTANT_CRAWLER_RENDER_MODE = 'hybrid';
         process.env.SITE_ASSISTANT_CRAWLER_BROWSER_ENABLED = 'true';
-        process.env.SITE_ASSISTANT_CRAWLER_BROWSER_TIMEOUT_MS = '15000';
-        process.env.SITE_ASSISTANT_CRAWLER_BROWSER_WAIT_UNTIL =
-            'domcontentloaded';
-        process.env.SITE_ASSISTANT_CRAWLER_BROWSER_POST_LOAD_DELAY_MS = '1000';
 
         const config = secretsConfig();
 
-        expect(config.ai.siteAssistant.crawler.renderMode).toBe('hybrid');
-        expect(config.ai.siteAssistant.crawler.browser.enabled).toBe(true);
-        expect(config.ai.siteAssistant.crawler.browser.timeoutMs).toBe(15000);
-        expect(config.ai.siteAssistant.crawler.browser.waitUntil).toBe(
-            'domcontentloaded',
-        );
-        expect(config.ai.siteAssistant.crawler.browser.postLoadDelayMs).toBe(
-            1000,
-        );
+        expect(config.ai).not.toHaveProperty('siteAssistant');
     });
 
-    it('always enables robots respect in crawler config', () => {
+    it('does not surface removed crawler-specific flags', () => {
         process.env.SITE_ASSISTANT_CRAWLER_RESPECT_ROBOTS = 'false';
 
         const config = secretsConfig();
 
-        expect(config.ai.siteAssistant.crawler).not.toHaveProperty(
-            'respectRobots',
-        );
+        expect(config.ai).not.toHaveProperty('siteAssistant');
     });
 });

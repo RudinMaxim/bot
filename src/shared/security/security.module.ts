@@ -27,7 +27,6 @@ import { ChatOwnershipService } from './services/chat-ownership.service';
 import { OwnershipGuard } from './guards/ownership.guard';
 import { ApiKeyRegistryService } from './services/api-key-registry.service';
 import { ApiKeyGuard } from './guards/api-key.guard';
-import { SessionBootstrapController } from './controllers/session-bootstrap.controller';
 
 @Module({})
 export class SecurityModule {
@@ -57,7 +56,6 @@ export class SecurityModule {
                     }),
                 }),
             ],
-            controllers: [SessionBootstrapController],
             providers: [
                 Logger,
                 {

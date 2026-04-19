@@ -697,6 +697,9 @@ Expected: PASS with only supported controllers/providers still wired.
 
 - [x] Remove leftover `visuals` and `username` fields from active MAX/messaging/AI contracts and history payloads
 - [x] Re-run typecheck and the focused MAX/messaging suites after that cleanup
+- [x] Remove stale DTO/shared widget-websocket-TTS exports and obsolete tests
+- [x] Remove site-assistant/speech/real-estate config branches and dead element vectorization wiring
+- [x] Remove the legacy `session/bootstrap` HTTP controller from the active security module
 
 ```bash
 git add src/infrastructure/integration/integration.module.ts src/infrastructure/integration/controller/index.ts src/domain/messaging/controller/index.ts src/domain/messaging/services/index.ts
@@ -711,29 +714,29 @@ git commit -m "refactor: remove widget and site assistant runtime"
 - Modify: `docs/superpowers/plans/2026-04-19-max-accreditation-agent-implementation.md`
 - Test: targeted Jest suites
 
-- [ ] **Step 1: Run typecheck**
+- [x] **Step 1: Run typecheck**
 
 Run: `npm run typecheck`
 
 Expected: PASS with `exit 0`.
 
-- [ ] **Step 2: Run the focused MAX and AI suites**
+- [x] **Step 2: Run the focused MAX and AI suites**
 
 Run: `npm run test -- src/domain/ai/common/tests/specialist-catalog.service.spec.ts src/domain/ai/agents/coordinator/common/tests/coordinator.agent.spec.ts src/domain/ai/common/tests/orchestrator.service.spec.ts src/domain/ai/agents/response/common/tests/response.agent.spec.ts src/domain/ai/agents/search/common/tests/search.agent.spec.ts src/domain/ai/common/tests/ai.service.spec.ts src/domain/messaging/common/tests/max-adapter.service.spec.ts src/domain/messaging/common/tests/max-bot-api.service.spec.ts src/domain/messaging/common/tests/max-webhook.controller.spec.ts src/domain/messaging/common/tests/messaging.module.spec.ts`
 
 Expected: PASS with all targeted suites green.
 
-- [ ] **Step 3: Update README startup/config notes**
+- [x] **Step 3: Update README startup/config notes**
 
 ```md
 ## MAX Bot Runtime
 
-- Configure `MAX_BOT_TOKEN`, `MAX_WEBHOOK_SECRET`, and `MAX_WEBHOOK_BASE_URL`
+- Configure `MAX_BOT_TOKEN`, `MAX_WEBHOOK_SECRET`, and optional `MAX_WEBHOOK_BASE_URL`
 - Expose `POST /api/v1/max/webhook` to MAX
-- Refresh the knowledge base through the integration endpoint when content changes
+- Health probes stay on `/api/health/live` and `/api/health/ready`
 ```
 
-- [ ] **Step 4: Mark completed plan items**
+- [x] **Step 4: Mark completed plan items**
 
 ```md
 - [x] Task 1 completed
