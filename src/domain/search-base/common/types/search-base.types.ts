@@ -7,6 +7,7 @@ export interface SearchBaseItemInput {
     title: string;
     description: string;
     content?: string;
+    embeddingText?: string;
     url?: string;
     source?: string;
     updatedAt?: string;

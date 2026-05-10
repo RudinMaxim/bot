@@ -38,22 +38,33 @@ describe('search-base.util', () => {
             title: 'Подземный паркинг',
             description: 'В проекте предусмотрен подземный паркинг.',
             content: [
-                'topic: parking',
+                'category: parking',
                 'title: Подземный паркинг',
-                'search_phrases: есть ли паркинг',
-                'facts: В проекте предусмотрен подземный паркинг.',
+                'queries: есть ли паркинг',
                 'answer: В жилом комплексе предусмотрен подземный паркинг.',
             ].join('\n'),
         });
 
         expect(text).toBe(
             [
-                'topic: parking',
+                'category: parking',
                 'title: Подземный паркинг',
-                'search_phrases: есть ли паркинг',
-                'facts: В проекте предусмотрен подземный паркинг.',
+                'queries: есть ли паркинг',
                 'answer: В жилом комплексе предусмотрен подземный паркинг.',
             ].join('\n'),
+        );
+    });
+
+    it('uses explicit embedding text when provided', () => {
+        const text = buildSearchBaseText({
+            title: 'Полная карточка',
+            description: 'Описание',
+            content: 'category: misc\nanswer: полный ответ',
+            embeddingText: 'title: Коротко\nqueries: короткий запрос\nanswer: ответ',
+        });
+
+        expect(text).toBe(
+            'title: Коротко\nqueries: короткий запрос\nanswer: ответ',
         );
     });
 

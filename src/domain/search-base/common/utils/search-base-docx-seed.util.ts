@@ -21,6 +21,7 @@ export interface SearchBaseSeedItem {
     title: string;
     description: string;
     content: string;
+    embeddingText?: string;
     source: string;
     order: number;
     updatedAt?: string;
@@ -128,33 +129,40 @@ function buildSeedItemFromAsset(
     return {
         id,
         title,
-        description:
-            normalizeTextList(item.facts).join(' | ') || answer,
-        content: buildSearchBaseAssetContent(item),
+        description: answer,
+        content: buildSearchBaseAssetFullContent(item),
+        embeddingText: buildSearchBaseAssetEmbeddingText(item),
         source,
         order,
     };
 }
 
-function buildSearchBaseAssetContent(
+function buildSearchBaseAssetEmbeddingText(
     item: SearchBaseAssetPayload['items'][number],
 ): string {
-    const searchPhrases = normalizeTextList(item.search_phrases);
-    const facts = normalizeTextList(item.facts);
-    const restrictions = normalizeTextList(item.restrictions);
-    const tags = normalizeTextList(item.tags);
+    const queries = normalizeTextList(item.queries);
 
     return [
-        `topic: ${normalizeText(item.topic) || ''}`,
-        `intent: ${normalizeText(item.intent) || ''}`,
         `title: ${normalizeText(item.title) || ''}`,
-        `search_phrases: ${searchPhrases.join(' | ')}`,
-        `facts: ${facts.join(' | ')}`,
+        `queries: ${queries.join(' | ')}`,
         `answer: ${normalizeText(item.answer) || ''}`,
-        restrictions.length > 0
-            ? `restrictions: ${restrictions.join(' | ')}`
+    ].join('\n');
+}
+
+function buildSearchBaseAssetFullContent(
+    item: SearchBaseAssetPayload['items'][number],
+): string {
+    const queries = normalizeTextList(item.queries);
+    const guardrails = normalizeTextList(item.guardrails);
+
+    return [
+        `category: ${normalizeText(item.category) || ''}`,
+        `title: ${normalizeText(item.title) || ''}`,
+        `queries: ${queries.join(' | ')}`,
+        `answer: ${normalizeText(item.answer) || ''}`,
+        guardrails.length > 0
+            ? `guardrails: ${guardrails.join(' | ')}`
             : undefined,
-        tags.length > 0 ? `tags: ${tags.join(' | ')}` : undefined,
     ]
         .filter((value): value is string => typeof value === 'string')
         .join('\n');

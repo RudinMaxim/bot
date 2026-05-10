@@ -81,25 +81,23 @@ describe('buildSearchBaseSeedFromDocxExtract', () => {
 });
 
 describe('buildSearchBaseSeedFromAsset', () => {
-    it('maps knowledge-unit asset items into seed payload', () => {
+    it('maps v4 asset items into stored content and compact embedding text', () => {
         const payload = buildSearchBaseSeedFromAsset({
-            dataset: 'mys',
+            dataset: 'accreditation',
             locale: 'ru',
-            version: 2,
+            version: 4,
+            steps: [],
             items: [
                 {
                     id: 'parking-underground',
-                    topic: 'parking',
-                    intent: 'parking_availability',
+                    category: 'parking',
                     title: 'Подземный паркинг',
-                    search_phrases: [
+                    queries: [
                         'есть ли паркинг',
                         'подземный паркинг',
                     ],
-                    facts: ['В проекте предусмотрен подземный паркинг.'],
                     answer: 'В жилом комплексе предусмотрен подземный паркинг.',
-                    restrictions: ['Не утверждать стоимость.'],
-                    tags: ['parking'],
+                    guardrails: ['Не утверждать стоимость.'],
                     source: 'mys-curated',
                     order: 1,
                 },
@@ -113,16 +111,19 @@ describe('buildSearchBaseSeedFromAsset', () => {
                 {
                     id: 'parking-underground',
                     title: 'Подземный паркинг',
-                    description: 'В проекте предусмотрен подземный паркинг.',
+                    description:
+                        'В жилом комплексе предусмотрен подземный паркинг.',
                     content: [
-                        'topic: parking',
-                        'intent: parking_availability',
+                        'category: parking',
                         'title: Подземный паркинг',
-                        'search_phrases: есть ли паркинг | подземный паркинг',
-                        'facts: В проекте предусмотрен подземный паркинг.',
+                        'queries: есть ли паркинг | подземный паркинг',
                         'answer: В жилом комплексе предусмотрен подземный паркинг.',
-                        'restrictions: Не утверждать стоимость.',
-                        'tags: parking',
+                        'guardrails: Не утверждать стоимость.',
+                    ].join('\n'),
+                    embeddingText: [
+                        'title: Подземный паркинг',
+                        'queries: есть ли паркинг | подземный паркинг',
+                        'answer: В жилом комплексе предусмотрен подземный паркинг.',
                     ].join('\n'),
                     source: 'mys-curated',
                     order: 1,
@@ -140,7 +141,8 @@ describe('buildSearchBaseSeedFromAsset', () => {
         expect(payload.data[0]).toMatchObject({
             title: expect.any(String),
             description: expect.any(String),
-            content: expect.stringContaining('topic:'),
+            content: expect.stringContaining('category:'),
+            embeddingText: expect.stringContaining('queries:'),
         });
     });
 });

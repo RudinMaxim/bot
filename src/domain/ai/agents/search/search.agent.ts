@@ -432,20 +432,17 @@ export class SearchAgentService extends BaseAgent<
             0,
         );
         const titleScore = this.countTokenOverlap(queryTokens, structured.title);
-        const factsScore = structured.facts.reduce(
-            (sum, fact) => sum + this.countTokenOverlap(queryTokens, fact),
-            0,
-        );
+        const answerScore = this.countTokenOverlap(queryTokens, structured.answer);
 
-        return phraseScore + titleScore + factsScore;
+        return phraseScore + titleScore + answerScore;
     }
 
     private extractStructuredFields(text: string): {
         title: string;
         searchPhrases: string[];
-        facts: string[];
+        answer: string;
     } | null {
-        if (!text.includes('search_phrases:') && !text.includes('facts:')) {
+        if (!text.includes('queries:') && !text.includes('answer:')) {
             return null;
         }
 
@@ -462,24 +459,22 @@ export class SearchAgentService extends BaseAgent<
         const searchPhrases =
             lines
                 .find((line) =>
-                    line.toLowerCase().startsWith('search_phrases:'),
+                    line.toLowerCase().startsWith('queries:'),
                 )
-                ?.slice('search_phrases:'.length)
+                ?.slice('queries:'.length)
                 .split('|')
                 .map((value) => value.trim())
                 .filter((value) => value.length > 0) || [];
-        const facts =
+        const answer =
             lines
-                .find((line) => line.toLowerCase().startsWith('facts:'))
-                ?.slice('facts:'.length)
-                .split('|')
-                .map((value) => value.trim())
-                .filter((value) => value.length > 0) || [];
+                .find((line) => line.toLowerCase().startsWith('answer:'))
+                ?.slice('answer:'.length)
+                .trim() || '';
 
         return {
             title,
             searchPhrases,
-            facts,
+            answer,
         };
     }
 

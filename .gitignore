@@ -64,4 +64,4 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 opencode.json
 
 .nx
-.worktrees/
+./worktrees/**

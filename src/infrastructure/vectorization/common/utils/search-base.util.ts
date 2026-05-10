@@ -1,6 +1,10 @@
 import type { SearchBaseItemInput } from 'src/domain/search-base/common/types';
 
 export function buildSearchBaseText(item: SearchBaseItemInput): string {
+    if (typeof item.embeddingText === 'string' && item.embeddingText.trim()) {
+        return item.embeddingText.trim();
+    }
+
     const parts = isStructuredSearchBaseContent(item.content)
         ? [item.content]
         : [item.title, item.description, item.content].filter(
@@ -25,9 +29,8 @@ function isStructuredSearchBaseContent(value?: string): value is string {
     }
 
     return (
-        value.includes('search_phrases:') ||
-        value.includes('facts:') ||
-        value.includes('topic:')
+        value.includes('queries:') ||
+        value.includes('answer:')
     );
 }
 

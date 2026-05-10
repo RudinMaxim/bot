@@ -1,3 +1,6 @@
+process.env.MAX_BOT_TOKEN = process.env.MAX_BOT_TOKEN || 'token';
+process.env.MAX_WEBHOOK_SECRET = process.env.MAX_WEBHOOK_SECRET || 'secret';
+
 import { EmbeddingService } from '../../services/embedding.service';
 import { VECTOR_COMPARISON_METHOD } from '../../../../infrastructure/vectorization/common/constants';
 import { buildSearchBaseSeedFromAsset } from '../utils';
@@ -316,25 +319,23 @@ describe('EmbeddingService.searchBase', () => {
 });
 
 describe('EmbeddingService.upsertSearchBase', () => {
-    it('upserts structured asset seed text through the embedding pipeline', async () => {
+    it('upserts embedding text separately from full KB card payload', async () => {
         const seed = buildSearchBaseSeedFromAsset({
-            dataset: 'mys',
+            dataset: 'accreditation',
             locale: 'ru',
-            version: 2,
+            version: 4,
+            steps: [],
             items: [
                 {
                     id: 'parking-underground',
-                    topic: 'parking',
-                    intent: 'parking_availability',
+                    category: 'parking',
                     title: 'Подземный паркинг',
-                    search_phrases: [
+                    queries: [
                         'есть ли паркинг',
                         'подземный паркинг',
                     ],
-                    facts: ['В проекте предусмотрен подземный паркинг.'],
                     answer: 'В жилом комплексе предусмотрен подземный паркинг.',
-                    restrictions: ['Не утверждать стоимость.'],
-                    tags: ['parking'],
+                    guardrails: ['Не утверждать стоимость.'],
                     source: 'mys-curated',
                     order: 1,
                 },
@@ -403,7 +404,11 @@ describe('EmbeddingService.upsertSearchBase', () => {
         });
 
         expect(textProcessor.processText).toHaveBeenCalledWith(
-            expect.stringContaining('topic: parking'),
+            [
+                'title: Подземный паркинг',
+                'queries: есть ли паркинг | подземный паркинг',
+                'answer: В жилом комплексе предусмотрен подземный паркинг.',
+            ].join('\n'),
         );
         expect(searchBaseCatalogRepo.upsert).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -411,9 +416,23 @@ describe('EmbeddingService.upsertSearchBase', () => {
                 documentId: 'parking-underground',
                 title: 'Подземный паркинг',
                 description:
-                    'В проекте предусмотрен подземный паркинг.',
-                content: expect.stringContaining('topic: parking'),
+                    'В жилом комплексе предусмотрен подземный паркинг.',
+                content: expect.stringContaining('category: parking'),
             }),
+        );
+        expect(store.store).toHaveBeenCalledWith(
+            [
+                'title: Подземный паркинг',
+                'queries: есть ли паркинг | подземный паркинг',
+                'answer: В жилом комплексе предусмотрен подземный паркинг.',
+            ].join('\n'),
+            expect.any(Array),
+            expect.objectContaining({
+                content: expect.stringContaining(
+                    'guardrails: Не утверждать стоимость.',
+                ),
+            }),
+            expect.any(String),
         );
         expect(result.failed).toBe(0);
     });

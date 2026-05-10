@@ -198,11 +198,9 @@ describe('SearchAgentService', () => {
                 {
                     id: 'overview',
                     text: [
-                        'topic: project_overview',
-                        'intent: concept',
+                        'category: project_overview',
                         'title: Концепция проекта',
-                        'search_phrases: что за жк | расскажи о проекте',
-                        'facts: Разноформатная застройка.',
+                        'queries: что за жк | расскажи о проекте',
                         'answer: ЖК «Мыс» сочетает природу и современный формат жизни.',
                     ].join('\n'),
                     source: 'kb',
@@ -212,11 +210,9 @@ describe('SearchAgentService', () => {
                 {
                     id: 'parking-underground',
                     text: [
-                        'topic: parking',
-                        'intent: parking_availability',
+                        'category: parking',
                         'title: Подземный паркинг',
-                        'search_phrases: есть ли подземный паркинг | есть ли паркинг | парковка в жк мыс',
-                        'facts: В проекте предусмотрен подземный паркинг.',
+                        'queries: есть ли подземный паркинг | есть ли паркинг | парковка в жк мыс',
                         'answer: В жилом комплексе предусмотрен подземный паркинг.',
                     ].join('\n'),
                     source: 'kb',
@@ -246,11 +242,9 @@ describe('SearchAgentService', () => {
                 {
                     id: 'overview',
                     text: [
-                        'topic: project_overview',
-                        'intent: project_name',
+                        'category: project_overview',
                         'title: Проект',
-                        'search_phrases: расскажи о проекте',
-                        'facts: Это жилой комплекс.',
+                        'queries: расскажи о проекте',
                         'answer: Общая информация о проекте.',
                     ].join('\n'),
                     source: 'kb',
@@ -260,11 +254,9 @@ describe('SearchAgentService', () => {
                 {
                     id: 'project-name',
                     text: [
-                        'topic: project_overview',
-                        'intent: project_name',
+                        'category: project_overview',
                         'title: Название жилого комплекса',
-                        'search_phrases: как называется жилой комплекс мыс | название жилого комплекса',
-                        'facts: Название жилого комплекса — «Мыс».',
+                        'queries: как называется жилой комплекс мыс | название жилого комплекса',
                         'answer: Жилой комплекс называется «Мыс».',
                     ].join('\n'),
                     source: 'kb',
@@ -290,11 +282,9 @@ describe('SearchAgentService', () => {
                 {
                     id: 'overview',
                     text: [
-                        'topic: project_overview',
-                        'intent: concept',
+                        'category: project_overview',
                         'title: Обзор проекта',
-                        'search_phrases: расскажи о проекте | что за жк',
-                        'facts: Общая информация о проекте.',
+                        'queries: расскажи о проекте | что за жк',
                         'answer: ЖК «Мыс» сочетает природу и разные форматы жилья.',
                     ].join('\n'),
                     source: 'kb',
@@ -304,11 +294,9 @@ describe('SearchAgentService', () => {
                 {
                     id: 'initial-payment',
                     text: [
-                        'topic: purchase',
-                        'intent: initial_payment',
+                        'category: purchase',
                         'title: Первоначальный взнос',
-                        'search_phrases: первоначальный взнос | минимальный взнос по ипотеке',
-                        'facts: Первоначальный взнос — это первый платеж при покупке в ипотеку.',
+                        'queries: первоначальный взнос | минимальный взнос по ипотеке',
                         'answer: Для ипотеки в базе знаний есть отдельная тема про первоначальный взнос.',
                     ].join('\n'),
                     source: 'kb',
@@ -447,12 +435,10 @@ describe('SearchAgentService', () => {
                 {
                     id: 'documents',
                     text: [
-                        'topic: documents',
-                        'intent: required_documents',
+                        'category: documents',
                         'title: Документы для аккредитации',
-                        'facts: Нужны заявление и паспорт.',
                         'coverage_hint: partial',
-                        'restrictions: Для проверки ошибок в документах направлять к специалисту.',
+                        'guardrails: Для проверки ошибок в документах направлять к специалисту.',
                         'answer: Нужны заявление и паспорт.',
                     ].join('\n'),
                     source: 'kb',

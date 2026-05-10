@@ -29,27 +29,34 @@ describe('knowledge-base assets', () => {
 
         expect(asset.dataset).toBe('accreditation');
         expect(asset.locale).toBe('ru');
+        expect(asset.version).toBe(4);
+        expect(asset.steps.length).toBeGreaterThan(0);
         expect(asset.items.length).toBeGreaterThanOrEqual(10);
         expect(asset.items).toEqual(
             expect.arrayContaining([
                 expect.objectContaining({
                     id: 'fac-overview',
-                    topic: 'about_center',
+                    category: 'about_center',
                 }),
                 expect.objectContaining({
                     id: 'accreditation-types',
-                    topic: 'accreditation',
+                    category: 'accreditation',
                 }),
                 expect.objectContaining({
                     id: 'contacts-general',
-                    topic: 'contacts',
+                    category: 'contacts',
                 }),
                 expect.objectContaining({
                     id: 'working-hours',
-                    topic: 'schedule',
+                    category: 'schedule',
                 }),
             ]),
         );
+        expect(
+            asset.items.some((item) =>
+                item.followUpStepIds?.includes('uznat-kontakty'),
+            ),
+        ).toBe(true);
     });
 
     it('contains real FAC specialists instead of placeholders', () => {
