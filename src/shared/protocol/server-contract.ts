@@ -6,8 +6,12 @@ export const SERVER_CONTRACT = {
             feedback: '/api/v1/integration/feedback',
             searchBaseRefresh: '/api/v1/integration/search-base/refresh',
         },
-        max: {
-            webhook: '/api/v1/max/webhook',
+        messaging: {
+            widgetScript: '/api/v1/messaging/widget.js',
+            widgetStyles: '/api/v1/messaging/widget.css',
+            session: '/api/v1/messaging/session',
+            messages: '/api/v1/messaging/messages',
+            clear: '/api/v1/messaging/clear',
         },
     },
     headers: {

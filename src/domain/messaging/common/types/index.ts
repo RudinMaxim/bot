@@ -4,4 +4,3 @@ export * from './message.types';
 export * from './cache.types';
 export * from './message-history.types';
 export * from './message-service.types';
-export * from './max.types';

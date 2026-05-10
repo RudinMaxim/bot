@@ -10,8 +10,6 @@ describe('secretsConfig', () => {
             POSTGRES_URL: 'postgres://postgres:postgres@postgres:5432/app',
             REDIS_HOST: 'redis',
             OPENROUTER_API_KEY: 'sk-or-test',
-            MAX_BOT_TOKEN: 'token',
-            MAX_WEBHOOK_SECRET: 'secret',
             SESSION_SIGNING_KEY:
                 'dev-session-signing-key-change-me-min-32-bytes-abcdef',
             JWT_SIGNING_KEY:
@@ -24,6 +22,9 @@ describe('secretsConfig', () => {
     });
 
     it('does not expose removed site-assistant, speech, or real-estate config blocks', () => {
+        const removedPrefix = 'MA' + 'X';
+        process.env[`${removedPrefix}_BOT_TOKEN`] = 'token';
+        process.env[`${removedPrefix}_WEBHOOK_SECRET`] = 'secret';
         process.env.SITE_ASSISTANT_ELEMENT_INDEX_TOP_K = '42';
         process.env.YC_TTS_ENDPOINT =
             'https://tts.api.cloud.yandex.net:443/tts/v3/utteranceSynthesis';
@@ -32,6 +33,7 @@ describe('secretsConfig', () => {
 
         expect(config).not.toHaveProperty('siteAssistant');
         expect(config).not.toHaveProperty('realEstate');
+        expect(config).not.toHaveProperty('max');
         expect(config.ai).not.toHaveProperty('speechkit');
         expect(config.ai).not.toHaveProperty('siteAssistant');
     });

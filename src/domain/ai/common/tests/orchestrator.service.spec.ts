@@ -4,9 +4,6 @@ process.env.POSTGRES_URL =
 process.env.REDIS_HOST = process.env.REDIS_HOST || 'redis';
 process.env.OPENROUTER_API_KEY =
     process.env.OPENROUTER_API_KEY || 'sk-or-test';
-process.env.MAX_BOT_TOKEN = process.env.MAX_BOT_TOKEN || 'token';
-process.env.MAX_WEBHOOK_SECRET = process.env.MAX_WEBHOOK_SECRET || 'secret';
-
 import { AgentOrchestratorService } from '../../services/orchestrator.service';
 
 describe('AgentOrchestratorService', () => {

@@ -84,18 +84,6 @@ export const secretsConfig = registerAs('secrets', (): SecretsConfig => {
                 .map((origin) => origin.replace(/\/$/, '')),
         },
 
-        max: {
-            botToken: requireEnv('MAX_BOT_TOKEN'),
-            apiBaseUrl:
-                process.env.MAX_BOT_API_BASE_URL?.trim() ||
-                'https://platform-api.max.ru',
-            webhookSecret: requireEnv('MAX_WEBHOOK_SECRET'),
-            webhookPath:
-                process.env.MAX_WEBHOOK_PATH?.trim() ||
-                '/api/v1/max/webhook',
-            webhookBaseUrl: process.env.MAX_WEBHOOK_BASE_URL?.trim() || undefined,
-        },
-
         ai: {
             llm: {
                 apiKey: requireEnv('OPENROUTER_API_KEY'),

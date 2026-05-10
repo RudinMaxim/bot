@@ -5,53 +5,43 @@ import type {
 
 export const ALLOWED_MYS_SEARCH_BASE_SECTION_KEYS = [
     'object_overview',
-    'urban_blocks',
-    'club_houses',
-    'townhouses',
-    'cottages',
-    'quarter_infrastructure',
-    'around_infrastructure',
-    'developer_info',
     'sales_and_purchase',
 ] as const;
 
-export type AllowedMysSearchBaseSectionKey =
+type AllowedMysSearchBaseSectionKey =
     (typeof ALLOWED_MYS_SEARCH_BASE_SECTION_KEYS)[number];
 
-export interface CuratedSearchBaseDocxQaPayload extends SearchBaseDocxQaPayload {
-    readonly curation?: {
-        readonly strategy: 'allowed-sections-only';
-        readonly allowedSections: readonly AllowedMysSearchBaseSectionKey[];
-        readonly includedItems: number;
-        readonly excludedItems: number;
+export interface CuratedSearchBaseDocxPayload extends SearchBaseDocxQaPayload {
+    items: SearchBaseDocxQaItem[];
+    curation: {
+        strategy: 'allowed-sections-only';
+        allowedSections: readonly AllowedMysSearchBaseSectionKey[];
+        includedItems: number;
+        excludedItems: number;
     };
 }
 
-const ALLOWED_SECTION_KEY_SET = new Set<string>(
-    ALLOWED_MYS_SEARCH_BASE_SECTION_KEYS,
-);
-
 export function curateMysSearchBaseDocxPayload(
     payload: SearchBaseDocxQaPayload,
-): CuratedSearchBaseDocxQaPayload {
-    const items = Array.isArray(payload.items) ? payload.items : [];
-    const curatedItems = items.filter((item) => isAllowedItem(item));
+): CuratedSearchBaseDocxPayload {
+    const allowed = new Set<string>(ALLOWED_MYS_SEARCH_BASE_SECTION_KEYS);
+    const sourceItems = Array.isArray(payload.items) ? payload.items : [];
+    const items = sourceItems.filter((item) =>
+        allowed.has(normalizeSectionKey(item.sectionKey)),
+    );
 
     return {
         ...payload,
-        items: curatedItems,
+        items,
         curation: {
             strategy: 'allowed-sections-only',
             allowedSections: ALLOWED_MYS_SEARCH_BASE_SECTION_KEYS,
-            includedItems: curatedItems.length,
-            excludedItems: Math.max(0, items.length - curatedItems.length),
+            includedItems: items.length,
+            excludedItems: sourceItems.length - items.length,
         },
     };
 }
 
-function isAllowedItem(item: SearchBaseDocxQaItem): boolean {
-    return (
-        typeof item.sectionKey === 'string' &&
-        ALLOWED_SECTION_KEY_SET.has(item.sectionKey)
-    );
+function normalizeSectionKey(value: unknown): string {
+    return typeof value === 'string' ? value.trim() : '';
 }

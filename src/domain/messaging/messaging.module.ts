@@ -1,13 +1,12 @@
 import { Module } from '@nestjs/common';
 import { AiModule } from '../ai';
-import { MaxWebhookController } from './controller';
+import { MessagingWidgetController } from './controller';
 import {
     MessageCacheRepository,
 } from './repository';
 import {
+    FollowUpResolverService,
     MessageService,
-    MaxAdapterService,
-    MaxBotApiService,
 } from './services';
 import { ConfigModule } from 'src/infrastructure/config';
 
@@ -15,11 +14,10 @@ import { ConfigModule } from 'src/infrastructure/config';
     imports: [ConfigModule, AiModule],
     providers: [
         MessageService,
-        MaxAdapterService,
-        MaxBotApiService,
         MessageCacheRepository,
+        FollowUpResolverService,
     ],
-    controllers: [MaxWebhookController],
-    exports: [MessageService, MaxAdapterService, MaxBotApiService],
+    controllers: [MessagingWidgetController],
+    exports: [MessageService],
 })
 export class MessagingModule {}

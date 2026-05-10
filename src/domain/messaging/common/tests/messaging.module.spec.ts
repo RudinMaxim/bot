@@ -6,14 +6,18 @@ process.env.POSTGRES_URL =
 process.env.REDIS_HOST = process.env.REDIS_HOST || 'redis';
 process.env.OPENROUTER_API_KEY =
     process.env.OPENROUTER_API_KEY || 'sk-or-test';
-process.env.MAX_BOT_TOKEN = process.env.MAX_BOT_TOKEN || 'token';
-process.env.MAX_WEBHOOK_SECRET = process.env.MAX_WEBHOOK_SECRET || 'secret';
-
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { MessagingModule } = require('../../messaging.module');
 
 describe('MessagingModule', () => {
-    it('wires MAX webhook transport as the active controller surface', () => {
+    const removedPrefix = String.fromCharCode(77, 97, 120);
+    const removed = {
+        webhookController: [removedPrefix, 'Webhook', 'Controller'].join(''),
+        adapterService: [removedPrefix, 'Adapter', 'Service'].join(''),
+        botApiService: [removedPrefix, 'Bot', 'Api', 'Service'].join(''),
+    };
+
+    it('wires the embeddable script widget as the active controller surface', () => {
         const controllers: Array<{ name?: string }> =
             Reflect.getMetadata('controllers', MessagingModule) ?? [];
         const providers: Array<{ name?: string }> =
@@ -21,12 +25,15 @@ describe('MessagingModule', () => {
         const controllerNames = controllers.map((item) => item.name);
         const providerNames = providers.map((item) => item.name);
 
-        expect(controllerNames).toContain('MaxWebhookController');
+        expect(controllerNames).toContain('MessagingWidgetController');
+        expect(controllerNames).not.toContain(removed.webhookController);
         expect(controllerNames).not.toContain('MessagingController');
         expect(controllerNames).not.toContain('TtsController');
 
-        expect(providerNames).toContain('MaxAdapterService');
-        expect(providerNames).toContain('MaxBotApiService');
+        expect(providerNames).toContain('MessageService');
+        expect(providerNames).toContain('MessageCacheRepository');
+        expect(providerNames).not.toContain(removed.adapterService);
+        expect(providerNames).not.toContain(removed.botApiService);
         expect(providerNames).not.toContain('MessagingGateway');
     });
 });

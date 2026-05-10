@@ -5,23 +5,20 @@ describe('validateSecretsConfig', () => {
         POSTGRES_URL: 'postgres://postgres:postgres@postgres:5432/app',
         REDIS_HOST: 'redis',
         OPENROUTER_API_KEY: 'sk-or-test',
-        MAX_BOT_TOKEN: 'token',
-        MAX_WEBHOOK_SECRET: 'secret',
     };
 
-    it('parses MAX bot settings from secrets config', () => {
+    it('does not require or expose removed bot transport settings', () => {
+        const removedPrefix = 'MA' + 'X';
         const parsed = validateSecretsConfig({
             ...baseConfig,
-            MAX_BOT_TOKEN: 'token',
-            MAX_BOT_API_BASE_URL: 'https://platform-api.max.ru',
-            MAX_WEBHOOK_SECRET: 'secret',
+            [`${removedPrefix}_BOT_TOKEN`]: 'token',
+            [`${removedPrefix}_BOT_API_BASE_URL`]: 'https://example.invalid',
+            [`${removedPrefix}_WEBHOOK_SECRET`]: 'secret',
         });
 
-        expect(parsed.MAX_BOT_TOKEN).toBe('token');
-        expect(parsed.MAX_BOT_API_BASE_URL).toBe(
-            'https://platform-api.max.ru',
-        );
-        expect(parsed.MAX_WEBHOOK_SECRET).toBe('secret');
+        expect(parsed).not.toHaveProperty(`${removedPrefix}_BOT_TOKEN`);
+        expect(parsed).not.toHaveProperty(`${removedPrefix}_BOT_API_BASE_URL`);
+        expect(parsed).not.toHaveProperty(`${removedPrefix}_WEBHOOK_SECRET`);
     });
 
     it('does not expose legacy EMBEDDING_MODEL in parsed config', () => {

@@ -4,9 +4,6 @@ process.env.POSTGRES_URL =
 process.env.REDIS_HOST = process.env.REDIS_HOST || 'redis';
 process.env.OPENROUTER_API_KEY =
     process.env.OPENROUTER_API_KEY || 'sk-or-test';
-process.env.MAX_BOT_TOKEN = process.env.MAX_BOT_TOKEN || 'token';
-process.env.MAX_WEBHOOK_SECRET = process.env.MAX_WEBHOOK_SECRET || 'secret';
-
 import { Logger } from '@nestjs/common';
 import type { SecretsConfig } from 'src/infrastructure/config/interfaces';
 import type { LocalesService } from 'src/domain/locales/services';
@@ -199,8 +196,9 @@ describe('ResponseAgentService', () => {
         expect(result.success).toBe(true);
         expect(result.mode).toBe('route_to_specialist');
         expect(result.response).toContain(
-            'Точного ответа в базе знаний нет.',
+            'С этим лучше обратиться к профильному специалисту центра.',
         );
+        expect(result.response).not.toContain('базе знаний');
         expect(result.response).toContain('Иванов Иван Иванович');
         expect(result.response).toContain('@ivanov');
     });

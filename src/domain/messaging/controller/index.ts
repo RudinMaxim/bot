@@ -1,1 +1,1 @@
-export * from './max-webhook.controller';
+export * from './messaging-widget.controller';

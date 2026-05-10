@@ -13,9 +13,4 @@ export {
     searchBaseAssetRootPath,
     validateSearchBaseAsset,
 } from './search-base-asset-loader.util';
-export {
-    ALLOWED_MYS_SEARCH_BASE_SECTION_KEYS,
-    curateMysSearchBaseDocxPayload,
-    type AllowedMysSearchBaseSectionKey,
-    type CuratedSearchBaseDocxQaPayload,
-} from './search-base-docx-curation.util';
+

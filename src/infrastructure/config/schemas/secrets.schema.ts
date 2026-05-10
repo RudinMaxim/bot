@@ -41,18 +41,6 @@ export const secretsSchema = z.object({
         .string()
         .url()
         .default('https://openrouter.ai/api/v1'),
-    MAX_BOT_TOKEN: z
-        .string()
-        .min(1, { message: 'MAX_BOT_TOKEN is required' }),
-    MAX_BOT_API_BASE_URL: z
-        .string()
-        .url()
-        .default('https://platform-api.max.ru'),
-    MAX_WEBHOOK_SECRET: z
-        .string()
-        .min(1, { message: 'MAX_WEBHOOK_SECRET is required' }),
-    MAX_WEBHOOK_PATH: z.string().default('/api/v1/max/webhook'),
-    MAX_WEBHOOK_BASE_URL: z.string().url().optional(),
     AI_QUERY_CACHE_TTL: z.coerce.number().default(1800),
     // AI Models
     COORDINATOR_AVAILABLE_MODELS: z.string().default('gpt-5.2'),

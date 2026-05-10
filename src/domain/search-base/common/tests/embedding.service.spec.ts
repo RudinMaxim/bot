@@ -1,6 +1,3 @@
-process.env.MAX_BOT_TOKEN = process.env.MAX_BOT_TOKEN || 'token';
-process.env.MAX_WEBHOOK_SECRET = process.env.MAX_WEBHOOK_SECRET || 'secret';
-
 import { EmbeddingService } from '../../services/embedding.service';
 import { VECTOR_COMPARISON_METHOD } from '../../../../infrastructure/vectorization/common/constants';
 import { buildSearchBaseSeedFromAsset } from '../utils';

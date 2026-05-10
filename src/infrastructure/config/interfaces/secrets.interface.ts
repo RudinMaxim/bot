@@ -17,14 +17,6 @@ export abstract class SecretsConfig {
         origins: string[] | '*';
     };
 
-    max: {
-        botToken: string;
-        apiBaseUrl: string;
-        webhookSecret: string;
-        webhookPath: string;
-        webhookBaseUrl?: string;
-    };
-
     ai: {
         llm: {
             apiKey: string;

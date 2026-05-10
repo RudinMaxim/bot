@@ -1,17 +1,28 @@
-# MAX Accreditation Bot
+# Accreditation Messaging Widget
 
-NestJS backend for a MAX messenger bot that does only two things:
+NestJS backend for a minimal embeddable accreditation assistant:
 - answers from the accreditation knowledge base;
-- routes the user to a профильный специалист when the answer is partial or unreliable.
+- routes the user to a профильный специалист when the answer is partial or unreliable;
+- exposes a small script widget for regular websites.
 
 ## Runtime Surface
 
 Active HTTP surface:
-- `POST /api/v1/max/webhook`
+- `GET /api/v1/messaging/widget.js`
+- `GET /api/v1/messaging/widget.css`
+- `POST /api/v1/messaging/session`
+- `POST /api/v1/messaging/messages`
+- `POST /api/v1/messaging/clear`
 - `GET /api/health/live`
 - `GET /api/health/ready`
 
-The old widget, websocket, TTS, site-assistant, and browser-specific transport are removed from the active runtime.
+Embed:
+
+```html
+<script src="https://your-domain/api/v1/messaging/widget.js" defer></script>
+```
+
+The widget is vanilla JavaScript plus plain CSS. It stores the issued `chatId` locally as a convenience, while the server keeps the authoritative chat ownership mapping in the signed session cookie and Redis.
 
 ## Required Env
 
@@ -21,28 +32,47 @@ Minimum required variables:
 POSTGRES_URL=postgres://postgres:postgres@postgres:5432/developer-ai
 REDIS_HOST=redis
 OPENROUTER_API_KEY=sk-or-...
-MAX_BOT_TOKEN=
-MAX_WEBHOOK_SECRET=
-```
-
-Optional MAX settings:
-
-```env
-MAX_BOT_API_BASE_URL=https://platform-api.max.ru
-MAX_WEBHOOK_PATH=/api/v1/max/webhook
-MAX_WEBHOOK_BASE_URL=
+SESSION_SIGNING_KEY=change-me-min-32-bytes
+JWT_SIGNING_KEY=change-me-min-32-bytes
 ```
 
 ## Local Run
 
-```bash
+```powershell
 npm install
-npm run start:dev
+npm run dev:infra
+npm run db:migration:run:local
+npm run db:seed
+npm run dev:api
 ```
+
+In a second terminal:
+
+```powershell
+npm run dev:widget
+```
+
+Open `http://127.0.0.1:4000`. The page embeds
+`http://localhost:3500/api/v1/messaging/widget.js`.
+
+For local HTTP testing keep these values in `.env.local`:
+
+```env
+SESSION_COOKIE_SAMESITE=lax
+SESSION_COOKIE_SECURE=false
+CORS_ORIGINS=http://localhost:4000,http://127.0.0.1:4000
+```
+
+Set a real `OPENROUTER_API_KEY` before asking the widget questions. Without it,
+the widget page still opens, but AI responses will fail.
+
+This workspace includes `.env.local` with local-only overrides for cookies,
+CORS, Postgres, Redis, Weaviate and Ollama. Keep the real
+`OPENROUTER_API_KEY` in `.env`, or add it to `.env.local` locally.
 
 ## Verification
 
 ```bash
 npm run typecheck
-npm run test -- src/domain/ai/common/tests/specialist-catalog.service.spec.ts src/domain/ai/agents/coordinator/common/tests/coordinator.agent.spec.ts src/domain/ai/common/tests/orchestrator.service.spec.ts src/domain/ai/agents/response/common/tests/response.agent.spec.ts src/domain/ai/agents/search/common/tests/search.agent.spec.ts src/domain/ai/common/tests/ai.service.spec.ts src/domain/messaging/common/tests/max-adapter.service.spec.ts src/domain/messaging/common/tests/max-bot-api.service.spec.ts src/domain/messaging/common/tests/max-webhook.controller.spec.ts src/domain/messaging/common/tests/messaging.module.spec.ts src/domain/messaging/common/tests/max-only-cleanup.spec.ts src/infrastructure/config/register/secrets.config.spec.ts src/infrastructure/config/schemas/secrets.schema.spec.ts src/shared/security/security.module.spec.ts
+npm run test -- src/domain/messaging/common/tests/messaging-widget.controller.spec.ts src/domain/messaging/common/tests/messaging.module.spec.ts src/domain/messaging/common/tests/script-widget-cleanup.spec.ts src/domain/messaging/common/tests/message.service.spec.ts test/scripts/widget-dev-server.spec.ts
 ```

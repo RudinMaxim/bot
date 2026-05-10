@@ -2,6 +2,9 @@ services:
   weaviate:
     image: semitechnologies/weaviate:1.25.0
     restart: unless-stopped
+    ports:
+      - "8080:8080"
+      - "50051:50051"
     environment:
       - QUERY_DEFAULTS_LIMIT=25
       - AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED=true
@@ -22,6 +25,8 @@ services:
   ollama:
     image: ollama/ollama:latest
     restart: unless-stopped
+    ports:
+      - "11434:11434"
     environment:
       - OLLAMA_HOST=0.0.0.0
       - OLLAMA_ORIGINS=*
@@ -42,14 +47,26 @@ services:
   redis:
     image: redis:latest
     restart: unless-stopped
-    env_file:
-      - .env
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+    command: >
+      sh -c 'if [ -n "$$REDIS_PASSWORD" ]; then
+        redis-server --appendonly yes --requirepass "$$REDIS_PASSWORD";
+      else
+        redis-server --appendonly yes;
+      fi'
+    ports:
+      - "6379:6379"
     volumes:
       - redis_data:/data
     networks:
       - app_network
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      test:
+        [
+          "CMD-SHELL",
+          'if [ -n "$$REDIS_PASSWORD" ]; then redis-cli -a "$$REDIS_PASSWORD" ping; else redis-cli ping; fi',
+        ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -57,6 +74,8 @@ services:
   postgres:
     image: postgres:16
     restart: unless-stopped
+    ports:
+      - "5432:5432"
     environment:
       - POSTGRES_DB=${POSTGRES_DB:-developer-ai}
       - POSTGRES_USER=${POSTGRES_USER:-postgres}
@@ -86,14 +105,22 @@ services:
       - .env
     environment:
       HOST: 0.0.0.0
+      PORT: 3500
       POSTGRES_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-developer-ai}
       REDIS_HOST: redis
       EMBEDDING_DATABASE_URL: http://weaviate:8080
       EMBEDDING_VECTORIZATION_URL: http://ollama:11434
+      SESSION_COOKIE_DOMAIN: ""
+      SESSION_COOKIE_SAMESITE: lax
+      SESSION_COOKIE_SECURE: "false"
+      CORS_ORIGINS: http://localhost:4000,http://127.0.0.1:4000
+    ports:
+      - "3500:3500"
     depends_on:
       - weaviate
       - ollama
       - postgres
+      - redis
     networks:
       - app_network
       - web
@@ -108,4 +135,4 @@ networks:
   app_network:
     driver: bridge
   web:
-    external: true
+    driver: bridge

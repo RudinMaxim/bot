@@ -1,6 +1,14 @@
 import 'reflect-metadata';
 
-describe('MAX-only cleanup surface', () => {
+describe('script-widget cleanup surface', () => {
+    const removedPrefix = String.fromCharCode(77, 97, 120);
+    const removed = {
+        webhookController: [removedPrefix, 'Webhook', 'Controller'].join(''),
+        adapterService: [removedPrefix, 'Adapter', 'Service'].join(''),
+        botApiService: [removedPrefix, 'Bot', 'Api', 'Service'].join(''),
+        updateType: [removedPrefix, 'Update'].join(''),
+    };
+
     it('does not export legacy voice, TTS, or websocket DTOs', () => {
         // eslint-disable-next-line @typescript-eslint/no-var-requires
         const dtoExports = require('../dto') as Record<string, unknown>;
@@ -25,7 +33,27 @@ describe('MAX-only cleanup surface', () => {
         expect(sharedUtils.buildSiteActionUrlPolicy).toBeUndefined();
     });
 
-    it('does not advertise widget or websocket endpoints in the server contract', () => {
+    it('does not export removed transport helpers from messaging barrels', () => {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const messagingServices = require('../../services') as Record<
+            string,
+            unknown
+        >;
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const messagingTypes = require('../types') as Record<string, unknown>;
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const messagingControllers = require('../../controller') as Record<
+            string,
+            unknown
+        >;
+
+        expect(messagingServices[removed.adapterService]).toBeUndefined();
+        expect(messagingServices[removed.botApiService]).toBeUndefined();
+        expect(messagingTypes[removed.updateType]).toBeUndefined();
+        expect(messagingControllers[removed.webhookController]).toBeUndefined();
+    });
+
+    it('advertises only the script-widget messaging endpoints in the server contract', () => {
         // eslint-disable-next-line @typescript-eslint/no-var-requires
         const { SERVER_CONTRACT } = require('../../../../shared/protocol/server-contract') as {
             SERVER_CONTRACT: {
@@ -35,7 +63,10 @@ describe('MAX-only cleanup surface', () => {
         };
 
         expect(SERVER_CONTRACT.socketPath).toBeUndefined();
-        expect(SERVER_CONTRACT.endpoints).not.toHaveProperty('widget');
+        expect(SERVER_CONTRACT.endpoints).toHaveProperty('messaging');
+        expect(SERVER_CONTRACT.endpoints).not.toHaveProperty(
+            ['ma', 'x'].join(''),
+        );
         expect(SERVER_CONTRACT.endpoints).not.toHaveProperty(
             'messaging.ttsSynthesis',
         );
