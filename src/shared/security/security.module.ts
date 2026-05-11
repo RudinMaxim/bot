@@ -145,6 +145,7 @@ export class SecurityModule {
         secretsService: SecretsConfig,
     ): void {
         app.enableCors(resolveCorsOptions(secretsService.cors));
+        const enforceHttps = secretsService.security.session.cookieSecure;
 
         app.use(
             helmet({
@@ -157,9 +158,11 @@ export class SecurityModule {
                             "'wasm-unsafe-eval'",
                             "'inline-speculation-rules'",
                         ],
+                        'upgrade-insecure-requests': enforceHttps ? [] : null,
                     },
                 },
                 crossOriginResourcePolicy: { policy: 'cross-origin' },
+                strictTransportSecurity: enforceHttps ? undefined : false,
             }),
         );
     }
