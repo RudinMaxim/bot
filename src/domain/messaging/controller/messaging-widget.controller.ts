@@ -85,6 +85,19 @@ export class MessagingWidgetController {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ФАЦ ПГМУ чат</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      min-width: 320px;
+      height: 100%;
+      margin: 0;
+    }
+  </style>
 </head>
 <body>
   <main id="pgmu-demo-widget" aria-label="Демо чата ФАЦ ПГМУ"></main>
