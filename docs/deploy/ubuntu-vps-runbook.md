@@ -147,7 +147,7 @@ REDIS_PORT=6379
 REDIS_PASSWORD=REPLACE_WITH_STRONG_REDIS_PASSWORD
 REDIS_DB=0
 
-CORS_ORIGINS=https://psmu.ru,https://www.psmu.ru,https://chat.example.ru
+CORS_ORIGINS=https://psmu.ru,https://www.psmu.ru,https://chat.m-rudin.ru
 
 EMBEDDING_VECTORIZATION_PROVIDER=ollama
 EMBEDDING_VECTORIZATION_MODEL=nomic-embed-text-v2-moe

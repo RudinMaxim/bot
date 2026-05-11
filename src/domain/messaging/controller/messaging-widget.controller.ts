@@ -74,6 +74,62 @@ export class MessagingWidgetController {
         return MESSAGING_WIDGET_CSS;
     }
 
+    @Get('demo')
+    @Version('1')
+    @Header('Content-Type', 'text/html; charset=utf-8')
+    @Header('Cache-Control', 'no-store')
+    demoPage(): string {
+        return `<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ФАЦ ПГМУ чат</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      font-family: Arial, sans-serif;
+      background: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      min-width: 320px;
+      height: 100%;
+      margin: 0;
+    }
+
+    body {
+      min-height: 100dvh;
+      background: #ffffff;
+    }
+
+    #pgmu-demo-widget {
+      width: 100%;
+      height: 100dvh;
+      min-height: 360px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root,
+      body {
+        background: #15181d;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main id="pgmu-demo-widget" aria-label="Демо чата ФАЦ ПГМУ"></main>
+  <script src="./widget.js" data-container="#pgmu-demo-widget" async></script>
+</body>
+</html>`;
+    }
+
     @Post('session')
     @Version('1')
     async startSession(

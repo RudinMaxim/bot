@@ -216,6 +216,18 @@ describe('MessagingWidgetController', () => {
         expect(controller.widgetStyles()).toContain('--pgmu-crimson');
     });
 
+    it('serves a standalone demo page that mounts the widget full screen', () => {
+        const html = controller.demoPage();
+
+        expect(html).toContain('<!doctype html>');
+        expect(html).toContain('<title>ФАЦ ПГМУ чат</title>');
+        expect(html).toContain('id="pgmu-demo-widget"');
+        expect(html).toContain('src="./widget.js"');
+        expect(html).toContain('data-container="#pgmu-demo-widget"');
+        expect(html).toContain('height: 100dvh;');
+        expect(html).not.toContain('pgmu-widget__toggle');
+    });
+
     it('serves an always-open full-area widget without a launcher toggle', () => {
         expect(controller.widgetScript()).not.toContain(
             'pgmu-widget__toggle',
