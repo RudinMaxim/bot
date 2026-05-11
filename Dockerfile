@@ -19,6 +19,7 @@ ARG INSTALL_PLAYWRIGHT_BROWSER=false
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/dist/scripts ./dist/scripts
 COPY --from=builder /app/resources ./resources
 COPY --from=builder /app/scripts ./scripts
 

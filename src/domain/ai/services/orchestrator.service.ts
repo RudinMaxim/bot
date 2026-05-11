@@ -86,6 +86,19 @@ export class AgentOrchestratorService {
         };
 
         try {
+            if (this.shouldAnswerFromMemory(cleanedInput, conversationContext)) {
+                return this.handleMemoryRecall(
+                    sessionId,
+                    cleanedInput,
+                    conversationContext,
+                    coordinatorMetadata,
+                    startTime,
+                    abortSignal,
+                    locale,
+                    callbacks,
+                );
+            }
+
             callbacks?.onPhase?.(ProcessingPhase.THINKING);
 
             this.embeddingService.generateEmbedding(cleanedInput).catch(() => {});
@@ -204,6 +217,107 @@ export class AgentOrchestratorService {
         input: ResponseAgentInput,
     ): Promise<ResponseAgentOutput> {
         return this.responseAgent.process(input);
+    }
+
+    private shouldAnswerFromMemory(
+        input: string,
+        conversationContext: string,
+    ): boolean {
+        if (!conversationContext.trim()) {
+            return false;
+        }
+
+        const normalized = input
+            .trim()
+            .toLowerCase()
+            .replace(/ё/g, 'е');
+
+        return (
+            /(?:^|\s)(о\s+чем|что)\s+(?:ты\s+)?(?:мне\s+)?(?:говорил|говорили|рассказывал|обсуждали)(?:\s|$|\?)/iu.test(
+                normalized,
+            ) ||
+            /(?:^|\s)(?:напомни|повтори)(?:\s|$).{0,40}(?:что|о\s+чем)(?:\s|$|\?)/iu.test(
+                normalized,
+            ) ||
+            /\bwhat\s+(?:were\s+we|did\s+we)\s+(?:talking\s+about|discuss)\b/iu.test(
+                normalized,
+            )
+        );
+    }
+
+    private async handleMemoryRecall(
+        sessionId: string,
+        cleanedInput: string,
+        conversationContext: string,
+        metadata: PipelineMetadata,
+        startTime: number,
+        abortSignal: AbortSignal | undefined,
+        locale: SupportedLocale,
+        callbacks?: PipelineCallbacks,
+    ): Promise<ProcessResult<ResponseAgentOutput>> {
+        const responseMetadata: PipelineMetadata = {
+            ...metadata,
+            abortSignal,
+            resolvedLocale: locale,
+            agentsProcessed: 1,
+            agentsFailed: 0,
+            searchResultsCount: 0,
+            analysisResultsCount: 1,
+            extras: {
+                ...(metadata.extras ?? {}),
+                assistantMode: ASSISTANT_MODE.ANSWER,
+                memoryRecall: true,
+            },
+        };
+        const responseInput: ResponseAgentInput = {
+            sessionId,
+            originalQuery: cleanedInput,
+            mode: ASSISTANT_MODE.ANSWER,
+            searchResults: [],
+            analysisResults: [
+                {
+                    taskId: 'conversation_memory',
+                    instruction:
+                        'Ответить на вопрос пользователя по памяти текущего диалога',
+                    data: conversationContext,
+                    confidence: 0.9,
+                    propertyCards: [],
+                    metadata: {
+                        dataSources: ['session_context'],
+                        executionTime: 0,
+                        calculationsPerformed: [],
+                    },
+                    success: true,
+                },
+            ],
+            sourceType: SOURCE_TYPE.CONTEXT,
+            confidenceScore: 0.9,
+            status: AI_STATUS.COMPLETED,
+            timestamp: new Date().toISOString(),
+            metadata: responseMetadata,
+            streaming: callbacks?.onResponseChunk
+                ? {
+                      onTextChunk: (chunk, text) => {
+                          callbacks.onResponseChunk?.({ chunk, text });
+                      },
+                  }
+                : undefined,
+        };
+
+        callbacks?.onPhase?.(ProcessingPhase.GENERATING);
+
+        const finalResponse = await this.raceWithAbort(
+            this.responseAgent.process(responseInput),
+            abortSignal,
+        );
+
+        return this.createSuccessResult(
+            sessionId,
+            finalResponse,
+            startTime,
+            responseMetadata,
+            [finalResponse.metrics],
+        );
     }
 
     private shouldUseCoordinatorClarification(
