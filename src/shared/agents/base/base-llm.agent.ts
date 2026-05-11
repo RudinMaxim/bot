@@ -77,6 +77,8 @@ export abstract class BaseLLMAgent<
                 maxRetries: this.config.llm.maxRetries ?? 3,
                 streaming: this.config.llm.streamingEnabled ?? false,
             });
+            model.getNumTokens = async (content) =>
+                this.estimateTokens(this.formatMessageContent(content));
 
             this.logger.log(
                 `LLM model initialized: ${this.config.llm.modelName} | ` +
