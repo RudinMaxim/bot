@@ -92,6 +92,31 @@ describe('LocalesService runtime fallback assets', () => {
         expect(cacheRepo.set).not.toHaveBeenCalled();
         expect(cacheRepo.releaseRefreshLock).not.toHaveBeenCalled();
     });
+
+    it('returns an empty fallback when locale resource is missing', async () => {
+        const loadJsonResource = jest
+            .fn()
+            .mockRejectedValue(
+                new Error('Resource asset not found: locales/ru.json'),
+            );
+
+        jest.doMock('src/shared/runtime-assets', () => ({
+            loadJsonResource,
+        }));
+
+        const { LocalesService } = require('../../services/locales.service') as typeof import('../../services/locales.service');
+
+        const service = new LocalesService(
+            buildSecretsConfig(),
+            buildLocalesCacheRepo() as never,
+            buildLocalesStoreRepo() as never,
+        );
+
+        const locale = await service.getLocale('ru');
+
+        expect(locale.data).toEqual({});
+        expect(locale.source).toBe('fallback');
+    });
 });
 
 function buildSecretsConfig(

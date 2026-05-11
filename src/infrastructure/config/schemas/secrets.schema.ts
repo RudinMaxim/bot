@@ -59,7 +59,7 @@ export const secretsSchema = z.object({
         .enum(['ollama', 'openai', 'cohere'])
         .default('ollama'),
     EMBEDDING_VECTORIZATION_MODEL: z.string().default('nomic-embed-text-v2-moe'),
-    EMBEDDING_VECTORIZATION_URL: z.string().default('http://ollama:11434'),
+    EMBEDDING_VECTORIZATION_URL: z.string().default('http://ollama:11435'),
     EMBEDDING_VECTORIZATION_TIMEOUT: z.coerce.number().default(120000),
     EMBEDDING_VECTORIZATION_MAX_RETRIES: z.coerce.number().default(3),
     EMBEDDING_VECTORIZATION_BATCH_SIZE: z.coerce.number().default(8),
@@ -74,7 +74,9 @@ export const secretsSchema = z.object({
         .default('weaviate'),
     EMBEDDING_DATABASE_URL: z.string().default('http://weaviate:8080'),
     EMBEDDING_DATABASE_API_KEY: z.string().optional(),
-    EMBEDDING_DATABASE_CLASS_NAME: z.string().default('Embeddings'),
+    EMBEDDING_DATABASE_CLASS_NAME: z
+        .string()
+        .default('PsmuKnowledgeEmbeddings'),
     EMBEDDING_DATABASE_TIMEOUT: z.coerce.number().default(30000),
     EMBEDDING_DATABASE_BATCH_SIZE: z.coerce.number().default(100),
 

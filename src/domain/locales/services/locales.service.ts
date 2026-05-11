@@ -44,10 +44,24 @@ function loadFallbackLocale(locale?: string): Promise<LocaleData> {
         return cached;
     }
 
-    const pending = loadJsonResource<LocaleData>(resourcePath);
+    const pending = loadJsonResource<LocaleData>(resourcePath).catch(
+        (error: unknown) => {
+            if (isResourceAssetNotFound(error)) {
+                return {};
+            }
+            throw error;
+        },
+    );
     fallbackLocalePromises.set(resourcePath, pending);
 
     return pending;
+}
+
+function isResourceAssetNotFound(error: unknown): boolean {
+    return (
+        error instanceof Error &&
+        error.message.startsWith('Resource asset not found:')
+    );
 }
 
 @Injectable()
@@ -258,11 +272,11 @@ export class LocalesService implements OnModuleInit {
             await this.setCachedLocale(locale, entry);
         }
 
-        if (reason === 'miss') {
+        if (reason === 'miss' && Object.keys(fallback).length > 0) {
             const suffix = options.skipCacheWrite
                 ? ' Returning fallback without taking refresh lock.'
                 : ' Using fallback data.';
-            this.logger.warn(`Locales cache miss for ${locale}.${suffix}`);
+            this.logger.log(`Locales cache miss for ${locale}.${suffix}`);
         }
 
         this.updateDictionary(locale, fallback);

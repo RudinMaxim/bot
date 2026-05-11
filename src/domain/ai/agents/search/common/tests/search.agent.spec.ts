@@ -37,10 +37,12 @@ function buildSecrets(overrides?: {
 function buildInput(args?: {
     instruction?: string;
     parameters?: Record<string, unknown>;
+    metadata?: SearchAgentInput['metadata'];
 }): SearchAgentInput {
     return {
         sessionId: 'session_1',
         timestamp: new Date().toISOString(),
+        metadata: args?.metadata,
         agents: [
             {
                 agent_name: 'search_agent',
@@ -154,6 +156,11 @@ describe('SearchAgentService', () => {
                 expect.objectContaining({
                     limit: 10,
                     threshold: 0,
+                    filters: {
+                        dataset: 'search-base',
+                        contentType: 'document',
+                        locale: 'ru',
+                    },
                     strategy: 'hybrid',
                     hybridAlpha: 0.42,
                     hybridQuery: 'Про парковки',
@@ -182,8 +189,35 @@ describe('SearchAgentService', () => {
             expect(embeddingService.searchSimilar).toHaveBeenCalledWith(
                 'Что есть в ЖК на ул. Ленина в р-не центра?\nЧто есть в жилой комплекс на улица Ленина в районе центра?',
                 expect.objectContaining({
+                    filters: {
+                        dataset: 'search-base',
+                        contentType: 'document',
+                        locale: 'ru',
+                    },
                     strategy: 'hybrid',
                     hybridQuery: 'Что есть в ЖК на ул. Ленина в р-не центра?',
+                }),
+            );
+        });
+
+        it('uses the resolved metadata locale for search-base vector filters', async () => {
+            const { agent, embeddingService } = createAgent();
+
+            await agent.process(
+                buildInput({
+                    instruction: 'What accreditations are available?',
+                    metadata: { resolvedLocale: 'en', locale: 'ru' },
+                }),
+            );
+
+            expect(embeddingService.searchSimilar).toHaveBeenCalledWith(
+                'What accreditations are available?',
+                expect.objectContaining({
+                    filters: {
+                        dataset: 'search-base',
+                        contentType: 'document',
+                        locale: 'en',
+                    },
                 }),
             );
         });

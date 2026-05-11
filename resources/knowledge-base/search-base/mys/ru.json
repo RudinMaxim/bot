@@ -29,11 +29,6 @@
       "targetId": "courses-and-upskilling"
     },
     {
-      "id": "uznat-o-rukovodstve",
-      "displayName": "Узнать о руководстве",
-      "targetId": "specialist-rudin-viktor-vladimirovich"
-    },
-    {
       "id": "uznat-o-masc",
       "displayName": "Узнать о МАСЦ",
       "targetId": "specialist-artamonova-olga-antonovna"

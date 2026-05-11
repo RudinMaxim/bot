@@ -17,10 +17,12 @@ import {
     ResponseAgentInput,
     ResponseAgentOutput,
     QuickReply,
+    AnalyticsAgentResponse,
 } from './common/types/response.types';
 import { AGENT_NAME, ASSISTANT_MODE } from '../../common/constants';
 import { ResponseQuickRepliesService } from './common/services/response-quick-replies.service';
 import type { AssistantMode, SpecialistInfo } from '../../common/types';
+import type { SearchResult } from '../search';
 
 @Injectable()
 export class ResponseAgentService extends BaseLLMAgent<
@@ -124,6 +126,13 @@ export class ResponseAgentService extends BaseLLMAgent<
         const clarificationQuestions = this.resolveClarificationQuestions(input);
         const specialist = this.resolveSpecialist(input);
         const knowledgeText = this.buildKnowledgeText(input);
+        const responseText = await this.generateResponseText(input, context, {
+            locale,
+            mode,
+            knowledgeText,
+            clarificationQuestions,
+            specialist,
+        });
         const executionTime = Date.now() - context.startTime;
 
         return {
@@ -132,13 +141,7 @@ export class ResponseAgentService extends BaseLLMAgent<
             success: true,
             mode,
             metrics: this.createMetrics(context),
-            response: this.buildResponseMessage({
-                locale,
-                mode,
-                knowledgeText,
-                clarificationQuestions,
-                specialist,
-            }),
+            response: responseText,
             confidence: this.resolveConfidence(mode),
             goalAchievement: {
                 achieved: mode === ASSISTANT_MODE.ANSWER,
@@ -322,15 +325,187 @@ export class ResponseAgentService extends BaseLLMAgent<
     }
 
     private buildKnowledgeText(input: ResponseAgentInput): string {
-        const segments = (input.searchResults ?? [])
-            .map((result) => result.summarizedResponse?.trim())
-            .filter((value): value is string => Boolean(value));
+        const segments = (input.searchResults ?? []).flatMap((result, index) =>
+            this.formatSearchResult(result, index),
+        );
 
         if (segments.length > 0) {
             return segments.join('\n\n');
         }
 
         return '';
+    }
+
+    private async generateResponseText(
+        input: ResponseAgentInput,
+        context: AgentExecutionContext,
+        params: {
+            locale: SupportedLocale;
+            mode: AssistantMode;
+            knowledgeText: string;
+            clarificationQuestions: string[];
+            specialist?: SpecialistInfo;
+        },
+    ): Promise<string> {
+        if (params.mode === ASSISTANT_MODE.CLARIFY) {
+            return this.buildResponseMessage(params);
+        }
+
+        const prompt = this.buildResponsePrompt(input, params);
+        const messages = this.buildMessages(prompt);
+        let streamedText = '';
+        const rawResponse = await this.invokeLLMWithRetry(
+            messages,
+            context,
+            this.secretsConfig.ai.http.maxRetries,
+            input.streaming?.onTextChunk
+                ? {
+                      onChunk: (chunk) => {
+                          streamedText += chunk;
+                          input.streaming?.onTextChunk?.(chunk, streamedText);
+                      },
+                  }
+                : undefined,
+        );
+        const response = rawResponse.trim();
+
+        return response || this.buildResponseMessage(params);
+    }
+
+    private buildResponsePrompt(
+        input: ResponseAgentInput,
+        params: {
+            locale: SupportedLocale;
+            mode: AssistantMode;
+            knowledgeText: string;
+            clarificationQuestions: string[];
+            specialist?: SpecialistInfo;
+        },
+    ): string {
+        const localeInstruction =
+            params.locale === 'en'
+                ? 'Answer in English.'
+                : 'Ответь на русском языке.';
+        const sections: string[] = [
+            localeInstruction,
+            `Режим ответа: ${params.mode}`,
+            `Текущий вопрос пользователя:\n${this.cleanPromptBlock(input.originalQuery)}`,
+        ];
+
+        const conversation = this.cleanPromptBlock(
+            input.metadata?.conversationContext,
+        );
+        if (conversation) {
+            sections.push(`Память диалога:\n${conversation}`);
+        }
+
+        if (params.knowledgeText) {
+            sections.push(`Проверенные факты для ответа:\n${params.knowledgeText}`);
+        }
+
+        const analysisText = this.buildAnalysisText(input.analysisResults);
+        if (analysisText) {
+            sections.push(`Дополнительный контекст:\n${analysisText}`);
+        }
+
+        if (params.clarificationQuestions.length > 0) {
+            sections.push(
+                `Уточняющие вопросы:\n${params.clarificationQuestions
+                    .map((question) => `- ${this.cleanPromptBlock(question)}`)
+                    .join('\n')}`,
+            );
+        }
+
+        if (params.specialist) {
+            sections.push(
+                [
+                    'Профильный специалист:',
+                    `ФИО: ${params.specialist.fullName}`,
+                    `Должность: ${params.specialist.position}`,
+                    `Контакт: ${params.specialist.contact}`,
+                    `Причина: ${params.specialist.reason}`,
+                ].join('\n'),
+            );
+        }
+
+        sections.push(
+            [
+                'Сформируй финальный ответ для пользователя.',
+                '- Используй память диалога, чтобы понимать местоимения и продолжение предыдущего вопроса.',
+                '- Опирайся только на проверенные факты и контекст выше.',
+                '- Не упоминай базу знаний, поиск, источники, индекс или внутренние агенты.',
+                '- Если фактов мало, скажи кратко, что лучше уточнить у специалиста, и используй данные специалиста, если они есть.',
+                '- Верни только текст ответа в Markdown, без JSON.',
+            ].join('\n'),
+        );
+
+        return sections.join('\n\n');
+    }
+
+    private formatSearchResult(
+        result: SearchResult,
+        index: number,
+    ): string[] {
+        const parts: string[] = [];
+        const summary = this.cleanPromptBlock(result.summarizedResponse);
+
+        if (summary) {
+            parts.push(`Фрагмент ${index + 1}:\n${summary}`);
+        }
+
+        const documents = result.results
+            .slice(0, 3)
+            .map((document, documentIndex) => {
+                const title = this.cleanPromptBlock(document.title);
+                const content = this.cleanPromptBlock(document.content, 1200);
+                const url = this.cleanPromptBlock(document.url);
+
+                if (!title && !content && !url) {
+                    return '';
+                }
+
+                return [
+                    `Документ ${index + 1}.${documentIndex + 1}:`,
+                    title ? `Название: ${title}` : undefined,
+                    content ? `Текст: ${content}` : undefined,
+                    url ? `Ссылка: ${url}` : undefined,
+                ]
+                    .filter(Boolean)
+                    .join('\n');
+            })
+            .filter(Boolean);
+
+        parts.push(...documents);
+        return parts;
+    }
+
+    private buildAnalysisText(
+        analysisResults?: AnalyticsAgentResponse[],
+    ): string {
+        const segments = (analysisResults ?? [])
+            .map((result) => {
+                const data = this.cleanPromptBlock(result.data, 1500);
+                return data || '';
+            })
+            .filter(Boolean);
+
+        return segments.join('\n\n');
+    }
+
+    private cleanPromptBlock(value: unknown, maxLength = 3000): string {
+        if (value === null || value === undefined) {
+            return '';
+        }
+
+        const text =
+            typeof value === 'string' ? value : JSON.stringify(value, null, 2);
+        const normalized = text.replace(/\s+/g, ' ').trim();
+
+        if (normalized.length <= maxLength) {
+            return normalized;
+        }
+
+        return `${normalized.slice(0, maxLength - 3).trim()}...`;
     }
 
     private buildResponseMessage(params: {

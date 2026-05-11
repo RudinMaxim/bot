@@ -131,7 +131,7 @@ export const secretsConfig = registerAs('secrets', (): SecretsConfig => {
                 process.env.EMBEDDING_VECTORIZATION_MODEL || 'nomic-embed-text-v2-moe',
             vectorizationUrl:
                 process.env.EMBEDDING_VECTORIZATION_URL ||
-                'http://ollama:11434',
+                'http://ollama:11435',
             vectorizationTimeout: parseInt(
                 process.env.EMBEDDING_VECTORIZATION_TIMEOUT || '120000',
                 10,
@@ -160,7 +160,8 @@ export const secretsConfig = registerAs('secrets', (): SecretsConfig => {
                 process.env.EMBEDDING_DATABASE_URL || 'http://weaviate:8080',
             databaseApiKey: process.env.EMBEDDING_DATABASE_API_KEY,
             databaseClassName:
-                process.env.EMBEDDING_DATABASE_CLASS_NAME || 'Embeddings',
+                process.env.EMBEDDING_DATABASE_CLASS_NAME ||
+                'PsmuKnowledgeEmbeddings',
             databaseTimeout: parseInt(
                 process.env.EMBEDDING_DATABASE_TIMEOUT || '30000',
                 10,

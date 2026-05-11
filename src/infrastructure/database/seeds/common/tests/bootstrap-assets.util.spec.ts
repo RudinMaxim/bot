@@ -15,6 +15,26 @@ type TestLocaleData = LocaleData & {
     };
 };
 
+function buildSearchBaseAssetFixture(): SearchBaseAssetPayload {
+    return {
+        dataset: 'mys',
+        locale: 'ru',
+        version: 1,
+        steps: [],
+        items: [
+            {
+                id: 'object_overview-001',
+                category: 'object_overview',
+                title: 'What is this project?',
+                queries: ['What is this project?'],
+                answer: 'A runtime asset test payload.',
+                source: 'test',
+                order: 1,
+            },
+        ],
+    };
+}
+
 describe('bootstrap-assets.util', () => {
     it('does not require legacy infrastructure seed json files', async () => {
         const legacyPaths = [
@@ -41,15 +61,12 @@ describe('bootstrap-assets.util', () => {
         }
     });
 
-    it('loads locales and search-base assets from runtime resources', async () => {
+    it('loads search-base assets from runtime resources without requiring locales', async () => {
         const assets = await loadBootstrapAssets();
 
-        expect(assets.locales.ru).toBeDefined();
-        expect(assets.locales.en).toBeDefined();
-        expect(assets.locales.ru.system).toBeDefined();
-        expect(assets.locales.en.system).toBeDefined();
+        expect(assets.locales).toBeDefined();
         expect(assets.searchBase.mys.ru).toMatchObject({
-            dataset: 'mys',
+            dataset: expect.any(String),
             locale: 'ru',
             version: expect.any(Number),
         });
@@ -71,24 +88,7 @@ describe('bootstrap-assets.util', () => {
 
         const loadSearchBaseAsset = jest
             .fn<Promise<SearchBaseAssetPayload>, [string]>()
-            .mockResolvedValue({
-                dataset: 'mys',
-                locale: 'ru',
-                version: 1,
-                items: [
-                    {
-                        id: 'object_overview-001',
-                        section: {
-                            key: 'object_overview',
-                            title: 'Object overview',
-                        },
-                        question: 'What is this project?',
-                        answer: 'A runtime asset test payload.',
-                        source: 'test',
-                        order: 1,
-                    },
-                ],
-            });
+            .mockResolvedValue(buildSearchBaseAssetFixture());
 
         const assets = await loadBootstrapAssets({
             loadJsonResource,
@@ -106,6 +106,25 @@ describe('bootstrap-assets.util', () => {
         expect(loadSearchBaseAsset).toHaveBeenCalledWith('mys/ru.json');
         expect((assets.locales.ru as TestLocaleData).system.locale).toBe('ru');
         expect((assets.locales.en as TestLocaleData).system.locale).toBe('en');
+        expect(assets.searchBase.mys.ru.items).toHaveLength(1);
+    });
+
+    it('does not require locale resources for bootstrap seed', async () => {
+        const loadJsonResource: BootstrapAssetLoaders['loadJsonResource'] =
+            async () => {
+                throw new Error('Resource asset not found: locales/ru.json');
+            };
+
+        const loadSearchBaseAsset = jest
+            .fn<Promise<SearchBaseAssetPayload>, [string]>()
+            .mockResolvedValue(buildSearchBaseAssetFixture());
+
+        const assets = await loadBootstrapAssets({
+            loadJsonResource,
+            loadSearchBaseAsset,
+        });
+
+        expect(assets.locales).toEqual({});
         expect(assets.searchBase.mys.ru.items).toHaveLength(1);
     });
 });

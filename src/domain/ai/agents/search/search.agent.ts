@@ -18,6 +18,7 @@ import {
     WeaviateDocument,
 } from './common/types/search.types';
 import { EmbeddingService } from 'src/domain/search-base';
+import { SEARCH_BASE_VECTOR } from 'src/domain/search-base/common/constants';
 import type {
     SearchResult as EmbeddingSearchResult,
 } from 'src/domain/search-base/common/types/embedding.service.interface';
@@ -89,21 +90,24 @@ export class SearchAgentService extends BaseAgent<
 
         const searchResults = await Promise.all(
             tasks.map((task) =>
-                this.processSearchTask(input.sessionId, task, context).catch(
-                    (error) => {
-                        if (
-                            context.abortSignal?.aborted ||
-                            ErrorUtils.isCancellationError(error)
-                        ) {
-                            throw error;
-                        }
-                        return this.createFallbackResult(
-                            task.instruction,
-                            error,
-                            input.sessionId,
-                        );
-                    },
-                ),
+                this.processSearchTask(
+                    input.sessionId,
+                    task,
+                    context,
+                    input.metadata,
+                ).catch((error) => {
+                    if (
+                        context.abortSignal?.aborted ||
+                        ErrorUtils.isCancellationError(error)
+                    ) {
+                        throw error;
+                    }
+                    return this.createFallbackResult(
+                        task.instruction,
+                        error,
+                        input.sessionId,
+                    );
+                }),
             ),
         );
         const searchDocumentsCount = searchResults.reduce(
@@ -157,11 +161,13 @@ export class SearchAgentService extends BaseAgent<
         sessionId: string,
         task: { instruction: string; parameters?: Record<string, unknown> },
         context: AgentExecutionContext,
+        metadata?: SearchAgentInput['metadata'],
     ): Promise<AgentSearchResult> {
         const startTime = Date.now();
         const params = this.buildSearchParams(
             task.instruction,
             task.parameters,
+            metadata,
         );
 
         this.logger.debug(
@@ -271,6 +277,7 @@ export class SearchAgentService extends BaseAgent<
     private buildSearchParams(
         instruction: string,
         parameters?: Record<string, unknown>,
+        metadata?: SearchAgentInput['metadata'],
     ): VectorSearchParams {
         const queryCandidate =
             this.readStringParam(parameters?.query) ?? instruction;
@@ -291,6 +298,22 @@ export class SearchAgentService extends BaseAgent<
             strategy: 'hybrid',
             hybridAlpha: this.config.search.hybridAlpha,
             queryProperties: [...SearchAgentService.HYBRID_QUERY_PROPERTIES],
+            filters: this.buildSearchBaseFilters(metadata),
+        };
+    }
+
+    private buildSearchBaseFilters(
+        metadata?: SearchAgentInput['metadata'],
+    ): Record<string, string> {
+        const locale =
+            this.readStringParam(metadata?.resolvedLocale) ||
+            this.readStringParam(metadata?.locale) ||
+            'ru';
+
+        return {
+            dataset: SEARCH_BASE_VECTOR.DATASET,
+            contentType: SEARCH_BASE_VECTOR.CONTENT_TYPE,
+            locale,
         };
     }
 

@@ -59,6 +59,23 @@ function createAgent() {
     return { agent, localesService };
 }
 
+function mockLlm(agent: ResponseAgentService, content: string) {
+    const invoke = jest.fn().mockResolvedValue({
+        content,
+        usage_metadata: {
+            input_tokens: 12,
+            output_tokens: 5,
+            total_tokens: 17,
+        },
+    });
+
+    (agent as unknown as { model: { invoke: typeof invoke } }).model = {
+        invoke,
+    };
+
+    return invoke;
+}
+
 describe('ResponseAgentService', () => {
     let logSpy: jest.SpyInstance;
     let warnSpy: jest.SpyInstance;
@@ -89,6 +106,10 @@ describe('ResponseAgentService', () => {
 
     it('returns answer mode with knowledge-base summary', async () => {
         const { agent } = createAgent();
+        mockLlm(
+            agent,
+            'Для аккредитации нужны заявление и документ, удостоверяющий личность.',
+        );
 
         const result = await agent.process(
             buildInput({
@@ -114,10 +135,57 @@ describe('ResponseAgentService', () => {
         expect(result.success).toBe(true);
         expect(result.mode).toBe('answer');
         expect(result.response).toContain(
-            'По базе знаний нужны заявление и документ, удостоверяющий личность.',
+            'Для аккредитации нужны заявление и документ, удостоверяющий личность.',
         );
         expect(result.specialist).toBeUndefined();
         expect(result).not.toHaveProperty('visuals');
+    });
+
+    it('uses conversation memory and retrieved facts in the LLM response prompt', async () => {
+        const { agent } = createAgent();
+        const invoke = mockLlm(
+            agent,
+            'Вы спрашивали про первичную аккредитацию. ФАЦ ПГМУ проводит первичную и первичную специализированную аккредитацию.',
+        );
+
+        const result = await agent.process(
+            buildInput({
+                originalQuery: 'А какие виды она проводит?',
+                metadata: {
+                    locale: 'ru',
+                    conversationContext:
+                        'Пользователь ранее уточнял ФАЦ ПГМУ и первичную аккредитацию.',
+                },
+                searchResults: [
+                    {
+                        taskId: 's1',
+                        query: 'виды аккредитации ФАЦ ПГМУ',
+                        summarizedResponse:
+                            'ФАЦ ПГМУ проводит первичную и первичную специализированную аккредитацию.',
+                        results: [],
+                        metadata: {
+                            totalResults: 1,
+                            similarity: 0.91,
+                            executionTime: 10,
+                            answerability: 'answerable',
+                        },
+                    },
+                ],
+            }),
+        );
+
+        expect(result.success).toBe(true);
+        expect(result.response).toContain('первичную специализированную');
+        expect(result.metrics.llmCalls).toBe(1);
+        expect(invoke).toHaveBeenCalledTimes(1);
+        const prompt = String(invoke.mock.calls[0][0][1].content);
+        expect(prompt).toContain('А какие виды она проводит?');
+        expect(prompt).toContain(
+            'Пользователь ранее уточнял ФАЦ ПГМУ и первичную аккредитацию.',
+        );
+        expect(prompt).toContain(
+            'ФАЦ ПГМУ проводит первичную и первичную специализированную аккредитацию.',
+        );
     });
 
     it('returns clarify mode with short questions', async () => {
@@ -144,6 +212,10 @@ describe('ResponseAgentService', () => {
 
     it('returns partial answer with specialist details', async () => {
         const { agent } = createAgent();
+        mockLlm(
+            agent,
+            'Нужны заявление и паспорт. Остальное лучше уточнить у специалиста: Иванов Иван Иванович, @ivanov.',
+        );
 
         const result = await agent.process(
             buildInput({
@@ -180,6 +252,10 @@ describe('ResponseAgentService', () => {
 
     it('returns direct specialist routing when no reliable answer exists', async () => {
         const { agent } = createAgent();
+        mockLlm(
+            agent,
+            'С этим лучше обратиться к профильному специалисту центра: Иванов Иван Иванович, @ivanov.',
+        );
 
         const result = await agent.process(
             buildInput({
@@ -196,7 +272,7 @@ describe('ResponseAgentService', () => {
         expect(result.success).toBe(true);
         expect(result.mode).toBe('route_to_specialist');
         expect(result.response).toContain(
-            'С этим лучше обратиться к профильному специалисту центра.',
+            'С этим лучше обратиться к профильному специалисту центра',
         );
         expect(result.response).not.toContain('базе знаний');
         expect(result.response).toContain('Иванов Иван Иванович');
