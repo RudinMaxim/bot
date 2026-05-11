@@ -224,8 +224,17 @@ describe('MessagingWidgetController', () => {
         expect(html).toContain('id="pgmu-demo-widget"');
         expect(html).toContain('src="./widget.js"');
         expect(html).toContain('data-container="#pgmu-demo-widget"');
+        expect(html).toContain('data-api-relative="true"');
         expect(html).toContain('height: 100dvh;');
         expect(html).not.toContain('pgmu-widget__toggle');
+    });
+
+    it('allows demo mode to use relative API endpoints for IP-only HTTP testing', () => {
+        const script = controller.widgetScript();
+
+        expect(script).toContain('script.dataset.apiRelative === "true"');
+        expect(script).toContain('return apiBase.pathname + path;');
+        expect(script).toContain('return new URL(apiBase.pathname + path, apiBase.origin).toString();');
     });
 
     it('serves an always-open full-area widget without a launcher toggle', () => {

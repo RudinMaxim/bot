@@ -125,7 +125,7 @@ export class MessagingWidgetController {
 </head>
 <body>
   <main id="pgmu-demo-widget" aria-label="Демо чата ФАЦ ПГМУ"></main>
-  <script src="./widget.js" data-container="#pgmu-demo-widget" async></script>
+  <script src="./widget.js" data-container="#pgmu-demo-widget" data-api-relative="true" async></script>
 </body>
 </html>`;
     }

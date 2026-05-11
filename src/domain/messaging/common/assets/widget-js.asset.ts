@@ -6,6 +6,7 @@ export const MESSAGING_WIDGET_JS = `
   var script = document.currentScript;
   var apiBase = new URL(script && script.src ? script.src : "/api/v1/messaging/widget.js", window.location.href);
   apiBase.pathname = apiBase.pathname.replace(/\\/widget\\.js$/, "");
+  var useRelativeApi = !!(script && script.dataset && script.dataset.apiRelative === "true");
   var storageKey = "pgmu.messaging.chatId";
   var localeKey = "pgmu.messaging.locale";
   var savedLocale = window.localStorage.getItem(localeKey);
@@ -76,6 +77,9 @@ export const MESSAGING_WIDGET_JS = `
   }
 
   function endpoint(path) {
+    if (useRelativeApi) {
+      return apiBase.pathname + path;
+    }
     return new URL(apiBase.pathname + path, apiBase.origin).toString();
   }
 
