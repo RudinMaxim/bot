@@ -36,7 +36,10 @@ export class CoordinatorAgentService extends BaseLLMAgent<
         private readonly secretsConfig: SecretsConfig,
         private readonly preRouter: CoordinatorPreRouterService,
     ) {
-        super('CoordinatorAgent');
+        super('CoordinatorAgent', {
+            timeout: secretsConfig.ai.http.timeout,
+            maxRetries: secretsConfig.ai.http.maxRetries,
+        });
     }
     protected loadConfiguration(): CoordinatorAgentConfig {
         const modelName = selectAgentModel(

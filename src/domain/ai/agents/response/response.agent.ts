@@ -35,7 +35,10 @@ export class ResponseAgentService extends BaseLLMAgent<
         private readonly localesService: LocalesService,
         private readonly quickRepliesService: ResponseQuickRepliesService,
     ) {
-        super(AGENT_NAME.RESPONSE);
+        super(AGENT_NAME.RESPONSE, {
+            timeout: secretsConfig.ai.http.timeout,
+            maxRetries: secretsConfig.ai.http.maxRetries,
+        });
     }
 
     protected loadConfiguration(): ILLMAgentConfig {

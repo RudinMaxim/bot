@@ -104,6 +104,14 @@ describe('ResponseAgentService', () => {
         debugSpy.mockRestore();
     });
 
+    it('uses configured HTTP timeout for the outer agent operation', () => {
+        const { agent } = createAgent();
+
+        expect((agent as unknown as { options: { timeout: number } }).options.timeout).toBe(
+            1000,
+        );
+    });
+
     it('returns answer mode with knowledge-base summary', async () => {
         const { agent } = createAgent();
         mockLlm(

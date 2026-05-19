@@ -24,7 +24,10 @@ export class SummarizationAgentService extends BaseLLMAgent<
     ILLMAgentConfig
 > {
     constructor(private readonly secretsConfig: SecretsConfig) {
-        super('SummarizationAgent');
+        super('SummarizationAgent', {
+            timeout: secretsConfig.ai.http.timeout,
+            maxRetries: secretsConfig.ai.http.maxRetries,
+        });
     }
 
     protected loadConfiguration(): ILLMAgentConfig {
