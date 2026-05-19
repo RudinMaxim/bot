@@ -3,7 +3,6 @@ import {
     SystemMessage,
     HumanMessage,
     BaseMessage,
-    AIMessageChunk,
 } from '@langchain/core/messages';
 import type { RunnableConfig } from '@langchain/core/runnables';
 import { BaseAgent } from './base.agent';
@@ -183,9 +182,7 @@ export abstract class BaseLLMAgent<
                 context.abortSignal
                     ? { signal: context.abortSignal }
                     : undefined;
-            const response = options?.onChunk
-                ? await this.streamLLM(messages, context, options.onChunk)
-                : await this.model.invoke(messages, invokeConfig);
+            const response = await this.model.invoke(messages, invokeConfig);
             if (context.abortSignal?.aborted) {
                 throw ErrorUtils.createStructuredError(
                     'CANCELLED',
@@ -200,6 +197,8 @@ export abstract class BaseLLMAgent<
                     { responseType: typeof response.content },
                 );
             }
+
+            options?.onChunk?.(response.content);
 
             const outputTokens = this.estimateTokens(response.content);
             const metrics = this.buildLLMMetrics(
@@ -522,42 +521,6 @@ export abstract class BaseLLMAgent<
                 },
             },
         );
-    }
-
-    private async streamLLM(
-        messages: BaseMessage[],
-        context: AgentExecutionContext,
-        onChunk: (chunk: string) => void,
-    ): Promise<AIMessageChunk> {
-        const streamConfig: Partial<RunnableConfig> | undefined =
-            context.abortSignal ? { signal: context.abortSignal } : undefined;
-        const stream = await this.model.stream(messages, streamConfig);
-        let fullChunk: AIMessageChunk | undefined;
-
-        for await (const chunk of stream) {
-            if (context.abortSignal?.aborted) {
-                throw ErrorUtils.createStructuredError(
-                    'CANCELLED',
-                    'cancelled',
-                );
-            }
-
-            const delta = this.formatMessageContent(chunk.content);
-            if (delta) {
-                onChunk(delta);
-            }
-
-            fullChunk = fullChunk ? fullChunk.concat(chunk) : chunk;
-        }
-
-        if (!fullChunk) {
-            throw ErrorUtils.createStructuredError(
-                'INVALID_LLM_RESPONSE',
-                'Streaming response from LLM was empty',
-            );
-        }
-
-        return fullChunk;
     }
 
     /**

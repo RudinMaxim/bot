@@ -92,6 +92,34 @@ class TestLLMAgent extends BaseLLMAgent<
             { message: new AIMessage('streamed response') },
         ]);
     }
+
+    async invokeWithChunkCallback(
+        onChunk: (chunk: string) => void,
+    ): Promise<string> {
+        return this.invokeLLMWithRetry(
+            [new HumanMessage('hello')],
+            {
+                sessionId: 'session_1',
+                startTime: Date.now(),
+                inputTokens: 0,
+                outputTokens: 0,
+                llmCalls: 0,
+                retryCount: 0,
+                cachedInputTokens: 0,
+                inputCostUsd: 0,
+                outputCostUsd: 0,
+                totalCostUsd: 0,
+                pricingModels: [],
+                modelBreakdown: {},
+            },
+            1,
+            { onChunk },
+        );
+    }
+
+    replaceModel(model: unknown): void {
+        this.model = model as typeof this.model;
+    }
 }
 
 describe('BaseLLMAgent', () => {
@@ -103,7 +131,9 @@ describe('BaseLLMAgent', () => {
     });
 
     it('uses local token estimation instead of LangChain remote tiktoken fetch', async () => {
-        const fetchSpy = jest.fn().mockRejectedValue(new Error('network blocked'));
+        const fetchSpy = jest
+            .fn()
+            .mockRejectedValue(new Error('network blocked'));
         global.fetch = fetchSpy as unknown as typeof fetch;
         const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
         const agent = new TestLLMAgent('test_llm_agent');
@@ -119,7 +149,9 @@ describe('BaseLLMAgent', () => {
     });
 
     it('uses local token estimation for streaming usage calculations', async () => {
-        const fetchSpy = jest.fn().mockRejectedValue(new Error('network blocked'));
+        const fetchSpy = jest
+            .fn()
+            .mockRejectedValue(new Error('network blocked'));
         global.fetch = fetchSpy as unknown as typeof fetch;
         const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
         const agent = new TestLLMAgent('test_llm_agent');
@@ -128,6 +160,37 @@ describe('BaseLLMAgent', () => {
 
         await expect(agent.countPromptWithModel()).resolves.toBe(0);
         await expect(agent.countGenerationWithModel()).resolves.toBe(0);
+        expect(fetchSpy).not.toHaveBeenCalled();
+        expect(warnSpy).not.toHaveBeenCalledWith(
+            expect.stringContaining('Failed to calculate number of tokens'),
+            expect.anything(),
+        );
+    });
+
+    it('uses invoke instead of LangChain stream when chunk callbacks are requested', async () => {
+        const fetchSpy = jest
+            .fn()
+            .mockRejectedValue(new Error('network blocked'));
+        global.fetch = fetchSpy as unknown as typeof fetch;
+        const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+        const agent = new TestLLMAgent('test_llm_agent');
+
+        agent.onModuleInit();
+
+        const invoke = jest
+            .fn()
+            .mockResolvedValue(new AIMessage('full answer'));
+        const stream = jest.fn();
+        agent.replaceModel({ invoke, stream });
+
+        const onChunk = jest.fn();
+        await expect(agent.invokeWithChunkCallback(onChunk)).resolves.toBe(
+            'full answer',
+        );
+
+        expect(invoke).toHaveBeenCalledTimes(1);
+        expect(stream).not.toHaveBeenCalled();
+        expect(onChunk).toHaveBeenCalledWith('full answer');
         expect(fetchSpy).not.toHaveBeenCalled();
         expect(warnSpy).not.toHaveBeenCalledWith(
             expect.stringContaining('Failed to calculate number of tokens'),
