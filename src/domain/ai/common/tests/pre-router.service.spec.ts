@@ -6,7 +6,7 @@ describe('CoordinatorPreRouterService', () => {
         return new CoordinatorPreRouterService();
     }
 
-    it('routes broad apartment selection to search and analytics', () => {
+    it('routes broad apartment selection to search', () => {
         const service = createService();
 
         const result = service.classify(
@@ -18,11 +18,10 @@ describe('CoordinatorPreRouterService', () => {
         expect(result.reason).toBe('property_search');
         expect(result.agents.map((agent) => agent.agent_name)).toEqual([
             AGENT_NAME.SEARCH,
-            AGENT_NAME.ANALYZING,
         ]);
     });
 
-    it('routes self-contained bedroom and building query to search and analytics', () => {
+    it('routes self-contained bedroom and building query to search', () => {
         const service = createService();
 
         const result = service.classify('однушка в Волге', 'session_1');
@@ -31,11 +30,10 @@ describe('CoordinatorPreRouterService', () => {
         expect(result.reason).toBe('property_search');
         expect(result.agents.map((agent) => agent.agent_name)).toEqual([
             AGENT_NAME.SEARCH,
-            AGENT_NAME.ANALYZING,
         ]);
     });
 
-    it('routes standalone building switch query to search and analytics', () => {
+    it('routes standalone building switch query to search', () => {
         const service = createService();
 
         const result = service.classify('Волгу', 'session_1');
@@ -44,7 +42,6 @@ describe('CoordinatorPreRouterService', () => {
         expect(result.reason).toBe('building_switch');
         expect(result.agents.map((agent) => agent.agent_name)).toEqual([
             AGENT_NAME.SEARCH,
-            AGENT_NAME.ANALYZING,
         ]);
     });
 
@@ -59,7 +56,7 @@ describe('CoordinatorPreRouterService', () => {
         expect(result.matched).toBe(true);
         expect(result.reason).toBe('site_navigation');
         expect(result.agents.map((agent) => agent.agent_name)).toEqual([
-            AGENT_NAME.SITE_ASSISTANT,
+            AGENT_NAME.SEARCH,
         ]);
     });
 
@@ -82,6 +79,18 @@ describe('CoordinatorPreRouterService', () => {
 
         expect(result.matched).toBe(true);
         expect(result.reason).toBe('assistant_profile');
+        expect(result.agents.map((agent) => agent.agent_name)).toEqual([
+            AGENT_NAME.SEARCH,
+        ]);
+    });
+
+    it('routes broad FAC query to search knowledge flow', () => {
+        const service = createService();
+
+        const result = service.classify('расскажи про фац', 'session_1');
+
+        expect(result.matched).toBe(true);
+        expect(result.reason).toBe('fac_knowledge');
         expect(result.agents.map((agent) => agent.agent_name)).toEqual([
             AGENT_NAME.SEARCH,
         ]);
