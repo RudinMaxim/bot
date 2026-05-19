@@ -2,8 +2,7 @@ process.env.POSTGRES_URL =
     process.env.POSTGRES_URL ||
     'postgres://postgres:postgres@postgres:5432/app';
 process.env.REDIS_HOST = process.env.REDIS_HOST || 'redis';
-process.env.OPENROUTER_API_KEY =
-    process.env.OPENROUTER_API_KEY || 'sk-or-test';
+process.env.OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || 'sk-or-test';
 import { Logger } from '@nestjs/common';
 import type { SecretsConfig } from 'src/infrastructure/config/interfaces';
 import type { LocalesService } from 'src/domain/locales/services';
@@ -107,14 +106,15 @@ describe('ResponseAgentService', () => {
     it('uses configured HTTP timeout for the outer agent operation', () => {
         const { agent } = createAgent();
 
-        expect((agent as unknown as { options: { timeout: number } }).options.timeout).toBe(
-            1000,
-        );
+        expect(
+            (agent as unknown as { options: { timeout: number } }).options
+                .timeout,
+        ).toBe(1000);
     });
 
     it('returns answer mode with knowledge-base summary', async () => {
         const { agent } = createAgent();
-        mockLlm(
+        const invoke = mockLlm(
             agent,
             'Для аккредитации нужны заявление и документ, удостоверяющий личность.',
         );
@@ -143,15 +143,19 @@ describe('ResponseAgentService', () => {
         expect(result.success).toBe(true);
         expect(result.mode).toBe('answer');
         expect(result.response).toContain(
-            'Нужны заявление и документ, удостоверяющий личность.',
+            'Для аккредитации нужны заявление и документ, удостоверяющий личность.',
         );
+        expect(invoke).toHaveBeenCalledTimes(1);
         expect(result.specialist).toBeUndefined();
         expect(result).not.toHaveProperty('visuals');
     });
 
-    it('returns answerable search facts without calling the LLM', async () => {
+    it('synthesizes broad answerable search facts with the LLM', async () => {
         const { agent } = createAgent();
-        const invoke = mockLlm(agent, 'Этот ответ не должен использоваться.');
+        const invoke = mockLlm(
+            agent,
+            'ФАЦ ПГМУ объединяет МАСЦ и УМЦ Learn&Training, помогает готовиться к аккредитации и отрабатывать практические навыки.',
+        );
 
         const result = await agent.process(
             buildInput({
@@ -193,11 +197,11 @@ describe('ResponseAgentService', () => {
         expect(result.response).toContain('ФАЦ ПГМУ');
         expect(result.response).toContain('Learn&Training');
         expect(result.response).not.toContain('queries:');
-        expect(invoke).not.toHaveBeenCalled();
-        expect(result.metrics.llmCalls).toBe(0);
+        expect(invoke).toHaveBeenCalledTimes(1);
+        expect(result.metrics.llmCalls).toBe(1);
     });
 
-    it('uses retrieved facts directly for resolved follow-up questions', async () => {
+    it('uses the LLM to synthesize resolved follow-up questions', async () => {
         const { agent } = createAgent();
         const invoke = mockLlm(
             agent,
@@ -232,8 +236,44 @@ describe('ResponseAgentService', () => {
 
         expect(result.success).toBe(true);
         expect(result.response).toContain('первичную специализированную');
-        expect(result.metrics.llmCalls).toBe(0);
-        expect(invoke).not.toHaveBeenCalled();
+        expect(result.metrics.llmCalls).toBe(1);
+        expect(invoke).toHaveBeenCalledTimes(1);
+    });
+
+    it('synthesizes narrow contact facts with the LLM', async () => {
+        const { agent } = createAgent();
+        const invoke = mockLlm(
+            agent,
+            'ФАЦ ПГМУ находится по адресу: 614000, г. Пермь, ул. Попова, 7 / Монастырская, 83.',
+        );
+
+        const result = await agent.process(
+            buildInput({
+                mode: 'answer',
+                originalQuery: 'адрес фац',
+                searchResults: [
+                    {
+                        taskId: 's1',
+                        query: 'адрес фац',
+                        summarizedResponse:
+                            'answer: Адрес ФАЦ ПГМУ: 614000, г. Пермь, ул. Попова, 7 / Монастырская, 83.',
+                        results: [],
+                        metadata: {
+                            totalResults: 1,
+                            similarity: 0.91,
+                            executionTime: 10,
+                            answerability: 'answerable',
+                        },
+                    },
+                ],
+            }),
+        );
+
+        expect(result.success).toBe(true);
+        expect(result.response).toContain('ул. Попова, 7');
+        expect(result.response).not.toContain('answer:');
+        expect(result.metrics.llmCalls).toBe(1);
+        expect(invoke).toHaveBeenCalledTimes(1);
     });
 
     it('returns clarify mode with short questions', async () => {

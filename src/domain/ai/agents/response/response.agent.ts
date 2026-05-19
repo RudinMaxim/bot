@@ -9,10 +9,7 @@ import {
     selectAgentModel,
     AGENT_PRIORITY,
 } from 'src/shared/agents';
-import {
-    ensureLocale,
-    type SupportedLocale,
-} from '../../common/utils';
+import { ensureLocale, type SupportedLocale } from '../../common/utils';
 import {
     ResponseAgentInput,
     ResponseAgentOutput,
@@ -126,7 +123,8 @@ export class ResponseAgentService extends BaseLLMAgent<
             input.metadata?.resolvedLocale,
         );
         const mode = this.resolveMode(input);
-        const clarificationQuestions = this.resolveClarificationQuestions(input);
+        const clarificationQuestions =
+            this.resolveClarificationQuestions(input);
         const specialist = this.resolveSpecialist(input);
         const knowledgeText = this.buildKnowledgeText(input);
         const responseText = await this.generateResponseText(input, context, {
@@ -170,13 +168,12 @@ export class ResponseAgentService extends BaseLLMAgent<
                     questions: new Set(),
                     status: input.status ?? 'completed',
                     meta: {
-                        agentsProcessed:
-                            input.metadata?.agentsProcessed ?? 1,
+                        agentsProcessed: input.metadata?.agentsProcessed ?? 1,
                         searchResultsCount: input.searchResults?.length ?? 0,
                         hasAnalysis: false,
                         urlIncluded: false,
-                        answerability: input.searchResults?.[0]?.metadata
-                            .answerability,
+                        answerability:
+                            input.searchResults?.[0]?.metadata.answerability,
                         answerableSearchResults: 0,
                         insufficientSearchResults: 0,
                         unavailableSearchResults: 0,
@@ -196,7 +193,9 @@ export class ResponseAgentService extends BaseLLMAgent<
                 analysisResultsCount: 0,
                 hasUrl: Boolean(
                     input.searchResults?.some((result) =>
-                        result.results.some((document) => Boolean(document.url)),
+                        result.results.some((document) =>
+                            Boolean(document.url),
+                        ),
                     ),
                 ),
                 coordinatorConfidence:
@@ -279,9 +278,7 @@ export class ResponseAgentService extends BaseLLMAgent<
         return ASSISTANT_MODE.ANSWER;
     }
 
-    private resolveClarificationQuestions(
-        input: ResponseAgentInput,
-    ): string[] {
+    private resolveClarificationQuestions(input: ResponseAgentInput): string[] {
         if (input.clarificationQuestions?.length) {
             return [...input.clarificationQuestions];
         }
@@ -354,12 +351,6 @@ export class ResponseAgentService extends BaseLLMAgent<
             return this.buildResponseMessage(params);
         }
 
-        const directAnswer = this.buildDirectAnswerText(input, params.mode);
-        if (directAnswer) {
-            input.streaming?.onTextChunk?.(directAnswer, directAnswer);
-            return directAnswer;
-        }
-
         const prompt = this.buildResponsePrompt(input, params);
         const messages = this.buildMessages(prompt);
         let streamedText = '';
@@ -379,89 +370,6 @@ export class ResponseAgentService extends BaseLLMAgent<
         const response = rawResponse.trim();
 
         return response || this.buildResponseMessage(params);
-    }
-
-    private buildDirectAnswerText(
-        input: ResponseAgentInput,
-        mode: AssistantMode,
-    ): string {
-        if (mode !== ASSISTANT_MODE.ANSWER) {
-            return '';
-        }
-
-        for (const result of input.searchResults ?? []) {
-            if (
-                result.metadata.answerability &&
-                result.metadata.answerability !== 'answerable'
-            ) {
-                continue;
-            }
-
-            const answer = this.extractDirectAnswer(result);
-            if (answer) {
-                return answer;
-            }
-        }
-
-        return '';
-    }
-
-    private extractDirectAnswer(result: SearchResult): string {
-        const candidates = [
-            ...result.results.map((document) => document.content),
-            result.summarizedResponse,
-        ];
-
-        for (const candidate of candidates) {
-            const answer = this.extractStructuredAnswer(candidate);
-            if (answer) {
-                return this.cleanDirectAnswer(answer);
-            }
-        }
-
-        return '';
-    }
-
-    private extractStructuredAnswer(value: unknown): string {
-        if (typeof value !== 'string' || !value.trim()) {
-            return '';
-        }
-
-        const normalized = value.replace(/\r\n/g, '\n').trim();
-        const answerMatch = normalized.match(
-            /(?:^|\n)answer:\s*([\s\S]*?)(?=\n(?:title|queries|category|source|url|guardrails):|$)/i,
-        );
-        if (answerMatch?.[1]?.trim()) {
-            return answerMatch[1].trim();
-        }
-
-        const withoutStructuredFields = normalized
-            .split('\n')
-            .map((line) => line.trim())
-            .filter(
-                (line) =>
-                    !/^(title|queries|category|source|url|guardrails):/i.test(
-                        line,
-                    ),
-            )
-            .join('\n')
-            .trim();
-
-        return withoutStructuredFields;
-    }
-
-    private cleanDirectAnswer(value: string): string {
-        const cleaned = value
-            .replace(/^по базе знаний\s+/iu, '')
-            .replace(/\bпо базе знаний\s+для\s+/giu, 'для ')
-            .replace(/\bв базе фац указан/giu, 'в ФАЦ указан')
-            .replace(/\bв базе указано,\s+что\s+/giu, '')
-            .replace(/\bв базе указан/giu, 'указан')
-            .replace(/\s+\n/g, '\n')
-            .replace(/\n{3,}/g, '\n\n')
-            .trim();
-
-        return cleaned ? cleaned[0].toUpperCase() + cleaned.slice(1) : '';
     }
 
     private buildResponsePrompt(
@@ -492,7 +400,9 @@ export class ResponseAgentService extends BaseLLMAgent<
         }
 
         if (params.knowledgeText) {
-            sections.push(`Проверенные факты для ответа:\n${params.knowledgeText}`);
+            sections.push(
+                `Проверенные факты для ответа:\n${params.knowledgeText}`,
+            );
         }
 
         const analysisText = this.buildAnalysisText(input.analysisResults);
@@ -534,10 +444,7 @@ export class ResponseAgentService extends BaseLLMAgent<
         return sections.join('\n\n');
     }
 
-    private formatSearchResult(
-        result: SearchResult,
-        index: number,
-    ): string[] {
+    private formatSearchResult(result: SearchResult, index: number): string[] {
         const parts: string[] = [];
         const summary = this.cleanPromptBlock(result.summarizedResponse);
 

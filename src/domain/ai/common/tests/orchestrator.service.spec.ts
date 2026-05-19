@@ -307,4 +307,103 @@ describe('AgentOrchestratorService', () => {
             }),
         );
     });
+
+    it('enriches "what else" follow-up questions with the recent conversation topic', async () => {
+        const coordinatorAgent = {
+            process: jest.fn().mockImplementation(async (input) => ({
+                success: true,
+                sessionId: input.sessionId,
+                input: input.input,
+                timestamp: '2026-05-19T00:00:00.000Z',
+                mode: 'answer',
+                agents: [],
+                shouldClarify: false,
+                clarificationQuestions: [],
+                routingReason: 'fac_knowledge',
+                overallConfidence: 0.9,
+                metrics: {
+                    executionTime: 5,
+                    inputTokens: 20,
+                    outputTokens: 10,
+                    totalTokens: 30,
+                },
+            })),
+        };
+        const searchAgent = {
+            process: jest.fn().mockResolvedValue({
+                success: true,
+                sessionId: 'session_1',
+                timestamp: '2026-05-19T00:00:00.000Z',
+                searchResults: [],
+                metrics: {
+                    executionTime: 20,
+                    inputTokens: 10,
+                    outputTokens: 10,
+                    totalTokens: 20,
+                },
+            }),
+        };
+        const responseAgent = {
+            process: jest.fn().mockResolvedValue({
+                success: true,
+                sessionId: 'session_1',
+                timestamp: '2026-05-19T00:00:00.000Z',
+                mode: 'answer',
+                response: 'Есть олимпиады и конкурсы практических навыков.',
+                confidence: 'high',
+                metrics: {
+                    executionTime: 15,
+                    inputTokens: 100,
+                    outputTokens: 20,
+                    totalTokens: 120,
+                    llmCalls: 1,
+                },
+                metadata: {
+                    executionTime: 15,
+                    agentsProcessed: 1,
+                    searchResultsCount: 0,
+                    analysisResultsCount: 0,
+                    hasUrl: false,
+                    coordinatorConfidence: 0.9,
+                },
+            }),
+        };
+        const specialistCatalog = {
+            findBestMatch: jest.fn(),
+            toSpecialistInfo: jest.fn(),
+        };
+        const localesService = {
+            getLocale: jest.fn().mockResolvedValue({}),
+        };
+        const embeddingService = {
+            generateEmbedding: jest.fn().mockResolvedValue([]),
+        };
+        const service = new AgentOrchestratorService(
+            coordinatorAgent as never,
+            searchAgent as never,
+            responseAgent as never,
+            specialistCatalog as never,
+            localesService as never,
+            embeddingService as never,
+        );
+
+        await service.orchestrateWorkflow(
+            'session_1',
+            'что ты еще знаешь',
+            undefined,
+            [
+                '=== Последние сообщения ===',
+                'Клиент: олимпиады',
+                'Ассистент: ФАЦ участвует в олимпиадах и конкурсах.',
+            ].join('\n'),
+            { locale: 'ru' },
+            Date.now(),
+        );
+
+        expect(coordinatorAgent.process).toHaveBeenCalledWith(
+            expect.objectContaining({
+                input: 'олимпиады что ты еще знаешь',
+            }),
+        );
+    });
 });
