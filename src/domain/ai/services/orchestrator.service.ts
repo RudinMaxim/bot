@@ -18,7 +18,11 @@ import type {
     ProgressiveResponsePayload,
     SessionContext,
 } from '../common/types';
-import { buildProcessingMetrics, ensureLocale, toFiniteNumber } from '../common/utils';
+import {
+    buildProcessingMetrics,
+    ensureLocale,
+    toFiniteNumber,
+} from '../common/utils';
 import {
     AGENT_NAME,
     AGENT_PRIORITY,
@@ -76,17 +80,34 @@ export class AgentOrchestratorService {
             timestamp: metadata.timestamp ?? new Date().toISOString(),
             abortSignal,
         };
+        const effectiveInput = this.resolveContextualInput(
+            cleanedInput,
+            coordinatorMetadata,
+        );
+        const effectiveCoordinatorMetadata: PipelineMetadata =
+            effectiveInput === cleanedInput
+                ? coordinatorMetadata
+                : {
+                      ...coordinatorMetadata,
+                      extras: {
+                          ...(coordinatorMetadata.extras ?? {}),
+                          contextualInput: effectiveInput,
+                      },
+                  };
 
         const coordinatorInput: CoordinatorInput = {
             sessionId,
-            input: cleanedInput,
+            input: effectiveInput,
             timestamp:
-                coordinatorMetadata.timestamp ?? new Date().toISOString(),
-            metadata: coordinatorMetadata,
+                effectiveCoordinatorMetadata.timestamp ??
+                new Date().toISOString(),
+            metadata: effectiveCoordinatorMetadata,
         };
 
         try {
-            if (this.shouldAnswerFromMemory(cleanedInput, conversationContext)) {
+            if (
+                this.shouldAnswerFromMemory(cleanedInput, conversationContext)
+            ) {
                 return this.handleMemoryRecall(
                     sessionId,
                     cleanedInput,
@@ -101,7 +122,9 @@ export class AgentOrchestratorService {
 
             callbacks?.onPhase?.(ProcessingPhase.THINKING);
 
-            this.embeddingService.generateEmbedding(cleanedInput).catch(() => {});
+            this.embeddingService
+                .generateEmbedding(effectiveInput)
+                .catch(() => {});
 
             const coordinatorResult = await this.raceWithAbort(
                 this.coordinatorAgent.process(coordinatorInput),
@@ -120,7 +143,7 @@ export class AgentOrchestratorService {
                     sessionId,
                     cleanedInput,
                     coordinatorResult,
-                    coordinatorMetadata,
+                    effectiveCoordinatorMetadata,
                     startTime,
                     abortSignal,
                     locale,
@@ -132,7 +155,11 @@ export class AgentOrchestratorService {
 
             const searchResponse = await this.raceWithAbort(
                 this.searchAgent.process(
-                    this.buildSearchInput(cleanedInput, coordinatorResult, coordinatorMetadata),
+                    this.buildSearchInput(
+                        effectiveInput,
+                        coordinatorResult,
+                        effectiveCoordinatorMetadata,
+                    ),
                 ),
                 abortSignal,
             );
@@ -159,7 +186,7 @@ export class AgentOrchestratorService {
             const responseInput = this.buildResponseInput({
                 sessionId,
                 cleanedInput,
-                coordinatorMetadata,
+                coordinatorMetadata: effectiveCoordinatorMetadata,
                 coordinatorResult,
                 searchResults,
                 finalMode,
@@ -206,7 +233,7 @@ export class AgentOrchestratorService {
                 return this.createCancelledResult(
                     sessionId,
                     startTime,
-                    coordinatorMetadata,
+                    effectiveCoordinatorMetadata,
                 );
             }
             throw error;
@@ -227,10 +254,7 @@ export class AgentOrchestratorService {
             return false;
         }
 
-        const normalized = input
-            .trim()
-            .toLowerCase()
-            .replace(/ё/g, 'е');
+        const normalized = input.trim().toLowerCase().replace(/ё/g, 'е');
 
         return (
             /(?:^|\s)(о\s+чем|что)\s+(?:ты\s+)?(?:мне\s+)?(?:говорил|говорили|рассказывал|обсуждали)(?:\s|$|\?)/iu.test(
@@ -243,6 +267,132 @@ export class AgentOrchestratorService {
                 normalized,
             )
         );
+    }
+
+    private resolveContextualInput(
+        cleanedInput: string,
+        metadata: PipelineMetadata,
+    ): string {
+        const trimmed = cleanedInput.trim();
+        if (!trimmed) {
+            return cleanedInput;
+        }
+
+        const normalized = this.normalizeConversationText(trimmed);
+        if (
+            !this.isContextualFollowUp(normalized) ||
+            this.hasStandaloneKnowledgeTopic(normalized)
+        ) {
+            return cleanedInput;
+        }
+
+        const recentTopic = this.extractRecentKnowledgeTopic(metadata);
+        if (!recentTopic) {
+            return cleanedInput;
+        }
+
+        return `${recentTopic} ${trimmed}`;
+    }
+
+    private isContextualFollowUp(normalizedInput: string): boolean {
+        if (normalizedInput.length > 90) {
+            return false;
+        }
+
+        return /^(?:для\s+)?(?:студент[\p{L}\p{N}_]*|школьник[\p{L}\p{N}_]*|выпускник[\p{L}\p{N}_]*|ординатор[\p{L}\p{N}_]*|специалист[\p{L}\p{N}_]*|обучающ[\p{L}\p{N}_]*|высш[\p{L}\p{N}_]*\s+образован[\p{L}\p{N}_]*|средн[\p{L}\p{N}_]*(?:\s+медицинск[\p{L}\p{N}_]*)?\s+образован[\p{L}\p{N}_]*|спо|участи[\p{L}\p{N}_]*|срок[\p{L}\p{N}_]*|дат[\p{L}\p{N}_]*|услови[\p{L}\p{N}_]*|проведени[\p{L}\p{N}_]*|регистрац[\p{L}\p{N}_]*)(?:\s|$)/iu.test(
+            normalizedInput,
+        );
+    }
+
+    private hasStandaloneKnowledgeTopic(normalizedInput: string): boolean {
+        return /(?:фац|федеральн[\p{L}\p{N}_]*\s+аккредитационн[\p{L}\p{N}_]*\s+центр|аккредитац[\p{L}\p{N}_]*|масц|умц|learn\s*&?\s*training|повышени[\p{L}\p{N}_]*\s+квалификац[\p{L}\p{N}_]*|курс[\p{L}\p{N}_]*|олимпиад[\p{L}\p{N}_]*|конкурс[\p{L}\p{N}_]*|профориентац[\p{L}\p{N}_]*|мероприят[\p{L}\p{N}_]*|контакт[\p{L}\p{N}_]*|адрес[\p{L}\p{N}_]*)/iu.test(
+            normalizedInput,
+        );
+    }
+
+    private extractRecentKnowledgeTopic(
+        metadata: PipelineMetadata,
+    ): string | undefined {
+        const candidates: string[] = [];
+
+        const history = metadata.sessionContext?.messageHistory;
+        if (Array.isArray(history)) {
+            for (let i = history.length - 1; i >= 0; i--) {
+                const message = history[i];
+                if (message?.role === 'user' && message.content?.trim()) {
+                    candidates.push(message.content);
+                }
+            }
+        }
+
+        const contextLines = (metadata.conversationContext ?? '')
+            .split(/\r?\n/)
+            .reverse();
+        for (const line of contextLines) {
+            const match = line.match(
+                /^\s*(?:Клиент|Пользователь|User):\s*(.+)$/iu,
+            );
+            if (match?.[1]) {
+                candidates.push(match[1]);
+            }
+        }
+
+        for (const candidate of candidates) {
+            const topic = this.resolveKnowledgeTopic(candidate);
+            if (topic) {
+                return topic;
+            }
+        }
+
+        return undefined;
+    }
+
+    private resolveKnowledgeTopic(value: string): string | undefined {
+        const normalized = this.normalizeConversationText(value);
+        if (/олимпиад[\p{L}\p{N}_]*/iu.test(normalized)) {
+            return 'олимпиады';
+        }
+        if (/конкурс[\p{L}\p{N}_]*/iu.test(normalized)) {
+            return 'конкурсы';
+        }
+        if (/аккредитац[\p{L}\p{N}_]*/iu.test(normalized)) {
+            return 'аккредитация';
+        }
+        if (
+            /(?:курс[\p{L}\p{N}_]*|повышени[\p{L}\p{N}_]*\s+квалификац[\p{L}\p{N}_]*)/iu.test(
+                normalized,
+            )
+        ) {
+            return 'курсы повышения квалификации';
+        }
+        if (/контакт[\p{L}\p{N}_]*/iu.test(normalized)) {
+            return 'контакты ФАЦ';
+        }
+        if (/адрес[\p{L}\p{N}_]*/iu.test(normalized)) {
+            return 'адреса ФАЦ';
+        }
+        if (/сотрудник[\p{L}\p{N}_]*/iu.test(normalized)) {
+            return 'сотрудники ФАЦ';
+        }
+        if (/масц/iu.test(normalized)) {
+            return 'МАСЦ';
+        }
+        if (/(?:умц|learn\s*&?\s*training)/iu.test(normalized)) {
+            return 'УМЦ Learn&Training';
+        }
+        if (
+            /(?:фац|федеральн[\p{L}\p{N}_]*\s+аккредитационн[\p{L}\p{N}_]*\s+центр)/iu.test(
+                normalized,
+            )
+        ) {
+            return 'ФАЦ ПГМУ';
+        }
+
+        return undefined;
+    }
+
+    private normalizeConversationText(value: string): string {
+        return value.trim().toLowerCase().replace(/ё/g, 'е');
     }
 
     private async handleMemoryRecall(
@@ -438,9 +588,7 @@ export class AgentOrchestratorService {
             return ASSISTANT_MODE.ROUTE_TO_SPECIALIST;
         }
 
-        if (
-            coordinatorResult.mode === ASSISTANT_MODE.PARTIAL_WITH_SPECIALIST
-        ) {
+        if (coordinatorResult.mode === ASSISTANT_MODE.PARTIAL_WITH_SPECIALIST) {
             return ASSISTANT_MODE.PARTIAL_WITH_SPECIALIST;
         }
 
@@ -510,7 +658,8 @@ export class AgentOrchestratorService {
             mode: params.finalMode,
             searchResults: params.searchResults,
             analysisResults: [],
-            clarificationQuestions: params.coordinatorResult.clarificationQuestions,
+            clarificationQuestions:
+                params.coordinatorResult.clarificationQuestions,
             specialist: params.specialist,
             sourceType: SOURCE_TYPE.SEARCH,
             confidenceScore: params.coordinatorResult.overallConfidence,
@@ -521,8 +670,7 @@ export class AgentOrchestratorService {
                 abortSignal: params.abortSignal,
                 coordinatorConfidence:
                     params.coordinatorResult.overallConfidence,
-                shouldClarify:
-                    params.finalMode === ASSISTANT_MODE.CLARIFY,
+                shouldClarify: params.finalMode === ASSISTANT_MODE.CLARIFY,
                 clarificationQuestions:
                     params.coordinatorResult.clarificationQuestions,
                 agentsProcessed: 1,

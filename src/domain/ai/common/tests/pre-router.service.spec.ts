@@ -9,10 +9,7 @@ describe('CoordinatorPreRouterService', () => {
     it('routes broad apartment selection to search', () => {
         const service = createService();
 
-        const result = service.classify(
-            'покажи все квартиры',
-            'session_1',
-        );
+        const result = service.classify('покажи все квартиры', 'session_1');
 
         expect(result.matched).toBe(true);
         expect(result.reason).toBe('property_search');
@@ -88,6 +85,21 @@ describe('CoordinatorPreRouterService', () => {
         const service = createService();
 
         const result = service.classify('расскажи про фац', 'session_1');
+
+        expect(result.matched).toBe(true);
+        expect(result.reason).toBe('fac_knowledge');
+        expect(result.agents.map((agent) => agent.agent_name)).toEqual([
+            AGENT_NAME.SEARCH,
+        ]);
+    });
+
+    it('routes student olympiad query to search knowledge flow', () => {
+        const service = createService();
+
+        const result = service.classify(
+            'олимпиада для студентов высшего образования',
+            'session_1',
+        );
 
         expect(result.matched).toBe(true);
         expect(result.reason).toBe('fac_knowledge');

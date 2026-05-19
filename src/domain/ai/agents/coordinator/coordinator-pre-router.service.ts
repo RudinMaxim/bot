@@ -60,7 +60,7 @@ const SITE_GO_BACK_RE = /(назад|go\s+back|вернись|вернуться
 const FAQ_RE =
     /(где\s+находи|адрес|как\s+добрать|парковк|инфраструктур|застройщик|mr\s*group|ход\s+строительств|сдач[аи]|срок|ипотек|рассрочк|материнск|маткапитал|trade[- ]?in|ремонт|отделк)/iu;
 const FAC_KNOWLEDGE_RE =
-    /(?:^|[^\p{L}\p{N}_])(фац|федеральн\w*\s+аккредитационн\w*\s+центр|аккредитац\w*|масц|умц|learn\s*&?\s*training|повышени\w*\s+квалификац\w*)(?=$|[^\p{L}\p{N}_])/iu;
+    /(?:^|[^\p{L}\p{N}_])(фац|федеральн[\p{L}\p{N}_]*\s+аккредитационн[\p{L}\p{N}_]*\s+центр|аккредитац[\p{L}\p{N}_]*|масц|умц|learn\s*&?\s*training|повышени[\p{L}\p{N}_]*\s+квалификац[\p{L}\p{N}_]*|олимпиад[\p{L}\p{N}_]*|конкурс[\p{L}\p{N}_]*(?:\s+практическ[\p{L}\p{N}_]*\s+навык[\p{L}\p{N}_]*)?|профориентац[\p{L}\p{N}_]*|мероприят[\p{L}\p{N}_]*)(?=$|[^\p{L}\p{N}_])/iu;
 const ASSISTANT_IDENTITY_RE =
     /(кто\s+ты|как\s+тебя\s+зовут|твое\s+имя|тво[её]\s+имя|что\s+ты\s+умеешь|чем\s+можешь\s+помочь|какие\s+у\s+тебя\s+возможности|who\s+are\s+you|what\s+is\s+your\s+name|what\s+can\s+you\s+do|how\s+can\s+you\s+help)/iu;
 
@@ -141,7 +141,9 @@ export class CoordinatorPreRouterService {
         }
 
         if (this.isSiteNavigation(trimmed)) {
-            this.logger.debug(`[${sessionId}] Pre-route: SEARCH (site_navigation)`);
+            this.logger.debug(
+                `[${sessionId}] Pre-route: SEARCH (site_navigation)`,
+            );
             return {
                 matched: true,
                 agents: [
@@ -157,7 +159,9 @@ export class CoordinatorPreRouterService {
         }
 
         if (FAC_KNOWLEDGE_RE.test(trimmed)) {
-            this.logger.debug(`[${sessionId}] Pre-route: SEARCH (fac_knowledge)`);
+            this.logger.debug(
+                `[${sessionId}] Pre-route: SEARCH (fac_knowledge)`,
+            );
             return {
                 matched: true,
                 agents: [
