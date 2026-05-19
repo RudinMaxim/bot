@@ -79,6 +79,14 @@ export abstract class BaseLLMAgent<
             });
             model.getNumTokens = async (content) =>
                 this.estimateTokens(this.formatMessageContent(content));
+            Object.assign(model, {
+                getNumTokensFromMessages: async (messages: BaseMessage[]) => ({
+                    totalCount: 0,
+                    countPerMessage: messages.map(() => 0),
+                }),
+                _getEstimatedTokenCountFromPrompt: async () => 0,
+                _getNumTokensFromGenerations: async () => 0,
+            });
 
             this.logger.log(
                 `LLM model initialized: ${this.config.llm.modelName} | ` +

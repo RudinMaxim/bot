@@ -1,4 +1,5 @@
 import { BaseLLMAgent } from './base-llm.agent';
+import { AIMessage, HumanMessage } from '@langchain/core/messages';
 import {
     AgentExecutionContext,
     IAgentInput,
@@ -63,6 +64,34 @@ class TestLLMAgent extends BaseLLMAgent<
     async countWithModel(content: string): Promise<number> {
         return this.model.getNumTokens(content);
     }
+
+    async countPromptWithModel(): Promise<number> {
+        return (
+            this.model as unknown as {
+                _getEstimatedTokenCountFromPrompt: (
+                    messages: unknown[],
+                    functions?: unknown,
+                    functionCall?: unknown,
+                ) => Promise<number>;
+            }
+        )._getEstimatedTokenCountFromPrompt(
+            [new HumanMessage('hello world')],
+            undefined,
+            undefined,
+        );
+    }
+
+    async countGenerationWithModel(): Promise<number> {
+        return (
+            this.model as unknown as {
+                _getNumTokensFromGenerations: (
+                    generations: unknown[],
+                ) => Promise<number>;
+            }
+        )._getNumTokensFromGenerations([
+            { message: new AIMessage('streamed response') },
+        ]);
+    }
 }
 
 describe('BaseLLMAgent', () => {
@@ -82,6 +111,23 @@ describe('BaseLLMAgent', () => {
         agent.onModuleInit();
 
         await expect(agent.countWithModel('hello world')).resolves.toBe(4);
+        expect(fetchSpy).not.toHaveBeenCalled();
+        expect(warnSpy).not.toHaveBeenCalledWith(
+            expect.stringContaining('Failed to calculate number of tokens'),
+            expect.anything(),
+        );
+    });
+
+    it('uses local token estimation for streaming usage calculations', async () => {
+        const fetchSpy = jest.fn().mockRejectedValue(new Error('network blocked'));
+        global.fetch = fetchSpy as unknown as typeof fetch;
+        const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+        const agent = new TestLLMAgent('test_llm_agent');
+
+        agent.onModuleInit();
+
+        await expect(agent.countPromptWithModel()).resolves.toBe(0);
+        await expect(agent.countGenerationWithModel()).resolves.toBe(0);
         expect(fetchSpy).not.toHaveBeenCalled();
         expect(warnSpy).not.toHaveBeenCalledWith(
             expect.stringContaining('Failed to calculate number of tokens'),
