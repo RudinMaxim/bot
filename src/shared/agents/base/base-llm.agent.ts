@@ -74,7 +74,10 @@ export abstract class BaseLLMAgent<
                 maxTokens: this.config.llm.maxTokens,
                 topP: this.config.llm.topP ?? 0.9,
                 maxRetries: this.config.llm.maxRetries ?? 3,
-                streaming: this.config.llm.streamingEnabled ?? false,
+                // LangChain's streaming branch estimates token usage via remote
+                // tiktoken files. We invoke non-streaming and fan out one final
+                // chunk ourselves to avoid slow tokenizer network fetches.
+                streaming: false,
             });
             model.getNumTokens = async (content) =>
                 this.estimateTokens(this.formatMessageContent(content));

@@ -120,6 +120,22 @@ class TestLLMAgent extends BaseLLMAgent<
     replaceModel(model: unknown): void {
         this.model = model as typeof this.model;
     }
+
+    isModelStreamingEnabled(): boolean {
+        return Boolean(this.model.streaming);
+    }
+}
+
+class StreamingConfiguredLLMAgent extends TestLLMAgent {
+    protected loadConfiguration(): ILLMAgentConfig {
+        return {
+            ...super.loadConfiguration(),
+            llm: {
+                ...super.loadConfiguration().llm,
+                streamingEnabled: true,
+            },
+        };
+    }
 }
 
 describe('BaseLLMAgent', () => {
@@ -196,5 +212,13 @@ describe('BaseLLMAgent', () => {
             expect.stringContaining('Failed to calculate number of tokens'),
             expect.anything(),
         );
+    });
+
+    it('keeps ChatOpenAI non-streaming even when response chunk callbacks are enabled', () => {
+        const agent = new StreamingConfiguredLLMAgent('test_llm_agent');
+
+        agent.onModuleInit();
+
+        expect(agent.isModelStreamingEnabled()).toBe(false);
     });
 });
