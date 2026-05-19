@@ -26,14 +26,35 @@ echo "===== CONTAINER NODE / PACKAGE VERSIONS ====="
 docker compose -f "$COMPOSE_FILE" exec -T "$SERVICE" sh -lc '
 node -v
 npm -v
-node -p "
-JSON.stringify({
-  app: require(\"/app/package.json\").version,
-  langchain: require(\"langchain/package.json\").version,
-  core: require(\"@langchain/core/package.json\").version,
-  openai: require(\"@langchain/openai/package.json\").version,
-  js_tiktoken: require(\"js-tiktoken/package.json\").version
-}, null, 2)"
+node <<'"'"'NODE'"'"'
+const fs = require("fs");
+const path = require("path");
+
+function packageVersion(packageName) {
+  try {
+    const packageJsonPath = path.join("/app/node_modules", packageName, "package.json");
+    return JSON.parse(fs.readFileSync(packageJsonPath, "utf8")).version;
+  } catch (error) {
+    return `unavailable: ${error.code || error.message}`;
+  }
+}
+
+function appVersion() {
+  try {
+    return JSON.parse(fs.readFileSync("/app/package.json", "utf8")).version;
+  } catch (error) {
+    return `unavailable: ${error.code || error.message}`;
+  }
+}
+
+console.log(JSON.stringify({
+  app: appVersion(),
+  langchain: packageVersion("langchain"),
+  core: packageVersion("@langchain/core"),
+  openai: packageVersion("@langchain/openai"),
+  js_tiktoken: packageVersion("js-tiktoken"),
+}, null, 2));
+NODE
 '
 
 echo
