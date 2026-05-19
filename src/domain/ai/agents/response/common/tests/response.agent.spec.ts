@@ -143,13 +143,61 @@ describe('ResponseAgentService', () => {
         expect(result.success).toBe(true);
         expect(result.mode).toBe('answer');
         expect(result.response).toContain(
-            'Для аккредитации нужны заявление и документ, удостоверяющий личность.',
+            'Нужны заявление и документ, удостоверяющий личность.',
         );
         expect(result.specialist).toBeUndefined();
         expect(result).not.toHaveProperty('visuals');
     });
 
-    it('uses conversation memory and retrieved facts in the LLM response prompt', async () => {
+    it('returns answerable search facts without calling the LLM', async () => {
+        const { agent } = createAgent();
+        const invoke = mockLlm(agent, 'Этот ответ не должен использоваться.');
+
+        const result = await agent.process(
+            buildInput({
+                mode: 'answer',
+                originalQuery: 'расскажи про фац',
+                searchResults: [
+                    {
+                        taskId: 's1',
+                        query: 'расскажи про фац',
+                        summarizedResponse:
+                            'title: Что такое Федеральный аккредитационный центр ПГМУ\nqueries: что такое фац | расскажи про фац\nanswer: ФАЦ ПГМУ — это федеральный аккредитационный центр, который объединяет МАСЦ и УМЦ Learn&Training.',
+                        results: [
+                            {
+                                _additional: {
+                                    id: 'fac-overview',
+                                    certainty: 0.9,
+                                    distance: 0.1,
+                                },
+                                content:
+                                    'title: Что такое Федеральный аккредитационный центр ПГМУ\nqueries: что такое фац | расскажи про фац\nanswer: ФАЦ ПГМУ — это федеральный аккредитационный центр, который объединяет МАСЦ и УМЦ Learn&Training.',
+                                metadata: {
+                                    certainty: 0.9,
+                                    distance: 0.1,
+                                },
+                            },
+                        ],
+                        metadata: {
+                            totalResults: 1,
+                            similarity: 0.9,
+                            executionTime: 10,
+                            answerability: 'answerable',
+                        },
+                    },
+                ],
+            }),
+        );
+
+        expect(result.success).toBe(true);
+        expect(result.response).toContain('ФАЦ ПГМУ');
+        expect(result.response).toContain('Learn&Training');
+        expect(result.response).not.toContain('queries:');
+        expect(invoke).not.toHaveBeenCalled();
+        expect(result.metrics.llmCalls).toBe(0);
+    });
+
+    it('uses retrieved facts directly for resolved follow-up questions', async () => {
         const { agent } = createAgent();
         const invoke = mockLlm(
             agent,
@@ -184,16 +232,8 @@ describe('ResponseAgentService', () => {
 
         expect(result.success).toBe(true);
         expect(result.response).toContain('первичную специализированную');
-        expect(result.metrics.llmCalls).toBe(1);
-        expect(invoke).toHaveBeenCalledTimes(1);
-        const prompt = String(invoke.mock.calls[0][0][1].content);
-        expect(prompt).toContain('А какие виды она проводит?');
-        expect(prompt).toContain(
-            'Пользователь ранее уточнял ФАЦ ПГМУ и первичную аккредитацию.',
-        );
-        expect(prompt).toContain(
-            'ФАЦ ПГМУ проводит первичную и первичную специализированную аккредитацию.',
-        );
+        expect(result.metrics.llmCalls).toBe(0);
+        expect(invoke).not.toHaveBeenCalled();
     });
 
     it('returns clarify mode with short questions', async () => {
